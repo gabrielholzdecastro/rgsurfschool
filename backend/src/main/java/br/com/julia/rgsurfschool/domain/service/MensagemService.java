@@ -1,9 +1,7 @@
 package br.com.julia.rgsurfschool.domain.service;
 
-import br.com.julia.rgsurfschool.api.dto.AlunoCreateRequest;
 import br.com.julia.rgsurfschool.api.dto.EvolutionWebhookRequest;
 import br.com.julia.rgsurfschool.domain.model.Mensagem;
-import br.com.julia.rgsurfschool.domain.model.NivelAluno;
 import br.com.julia.rgsurfschool.domain.repository.MensagemRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,11 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 
 @Service
 public class MensagemService {
@@ -23,14 +18,14 @@ public class MensagemService {
     private static final Logger logger = LoggerFactory.getLogger(MensagemService.class);
 
     private final MensagemRepository mensagemRepository;
-    private final AlunoService alunoService;
+    private final LojaService lojaService;
     private final String numeroMonitorado;
 
     public MensagemService(MensagemRepository mensagemRepository,
-                           AlunoService alunoService,
+                           LojaService lojaService,
                            @Value("${evolution.api.numero-monitorado:}") String numeroMonitorado) {
         this.mensagemRepository = mensagemRepository;
-        this.alunoService = alunoService;
+        this.lojaService = lojaService;
         this.numeroMonitorado = numeroMonitorado;
     }
 
@@ -74,109 +69,34 @@ public class MensagemService {
         // Processar mensagens apenas se vierem do grupo monitorado
         if (numeroMonitorado != null && !numeroMonitorado.isEmpty() && numeroMonitorado.equals(key.remoteJid())) {
             
-            // Comando de atualização: ATUALIZAR {id} {nivel}
-            if (texto != null && texto.trim().toUpperCase().startsWith("ATUALIZAR ")) {
-                processarComandoAtualizacao(texto);
-            } else {
-                // Caso contrário, tenta processar como cadastro de aluno (formato com pipe |)
-                processarMensagemAluno(texto);
+            // Comando de atualização de estoque: ESTOQUE {id_loja} {nova_quantidade}
+            if (texto != null && texto.trim().toUpperCase().startsWith("ESTOQUE ")) {
+                processarComandoEstoque(texto);
             }
         }
     }
 
-    private void processarComandoAtualizacao(String texto) {
-        // Formato: ATUALIZAR {id_aluno} {novo_nivel}
+    private void processarComandoEstoque(String texto) {
+        // Formato: ESTOQUE {id_loja} {nova_quantidade}
         String[] partes = texto.trim().split("\\s+");
         if (partes.length < 3) {
-            logger.warn("Comando ATUALIZAR incompleto: {}", texto);
+            logger.warn("Comando ESTOQUE incompleto: {}", texto);
             return;
         }
 
         try {
-            Long id = Long.parseLong(partes[1]);
-            String novoNivel = partes[2];
-//            alunoService.atualizarNivel(id, novoNivel);
-            logger.info("Aluno ID {} atualizado com sucesso para nível {}", id, novoNivel);
+            Long idLoja = Long.parseLong(partes[1]);
+            Integer novaQuantidade = Integer.parseInt(partes[2]);
+            
+            lojaService.atualizarQuantidadeEstoque(idLoja, novaQuantidade);
+            logger.info("Estoque da loja ID {} atualizado com sucesso para quantidade {}", idLoja, novaQuantidade);
         } catch (NumberFormatException e) {
-            logger.error("ID inválido no comando ATUALIZAR: {}", partes[1]);
+            logger.error("ID ou quantidade inválidos no comando ESTOQUE: {}", texto);
+        } catch (RuntimeException e) {
+            logger.error("Erro ao processar comando ESTOQUE: {}", e.getMessage());
         } catch (Exception e) {
-            logger.error("Erro ao processar comando ATUALIZAR: {}", e.getMessage());
+            logger.error("Erro inesperado ao processar comando ESTOQUE: {}", e.getMessage());
         }
-    }
-
-    private void processarMensagemAluno(String texto) {
-        if (texto == null || texto.trim().isEmpty()) {
-            return;
-        }
-
-        try {
-            AlunoCreateRequest alunoRequest = parsearMensagemAluno(texto);
-            if (alunoRequest != null) {
-                alunoService.create(alunoRequest);
-            }
-        } catch (Exception e) {
-            // Ignorar erros silenciosamente - não quebra o fluxo se parsing falhar
-            // Log poderia ser adicionado aqui se necessário
-        }
-    }
-
-    private AlunoCreateRequest parsearMensagemAluno(String texto) {
-        if (texto == null || texto.trim().isEmpty()) {
-            return null;
-        }
-
-        // Dividir por pipe e remover espaços em branco
-        String[] partes = texto.split("\\|");
-        if (partes.length < 2) {
-            return null; // Mínimo: nome e telefone
-        }
-
-        // Extrair campos (ordem: Nome | Telefone | Email | Nível | Data)
-        String nome = partes[0].trim();
-        String telefone = partes.length > 1 ? partes[1].trim() : null;
-        String email = partes.length > 2 && !partes[2].trim().isEmpty() ? partes[2].trim() : null;
-        String nivelStr = partes.length > 3 && !partes[3].trim().isEmpty() ? partes[3].trim().toUpperCase() : null;
-        String dataStr = partes.length > 4 && !partes[4].trim().isEmpty() ? partes[4].trim() : null;
-
-        // Validar campos obrigatórios
-        if (nome == null || nome.isEmpty() || telefone == null || telefone.isEmpty()) {
-            return null;
-        }
-
-        // Validar e converter email (opcional)
-        if (email != null && !email.isEmpty() && !isValidEmail(email)) {
-            email = null; // Ignorar email inválido
-        }
-
-        // Validar e converter nível (opcional)
-        NivelAluno nivelAluno = null;
-        if (nivelStr != null && !nivelStr.isEmpty()) {
-            try {
-                nivelAluno = NivelAluno.valueOf(nivelStr);
-            } catch (IllegalArgumentException e) {
-                // Nível inválido, manter como null
-            }
-        }
-
-        // Validar e converter data (opcional)
-        LocalDate dataInicio = null;
-        if (dataStr != null && !dataStr.isEmpty()) {
-            try {
-                dataInicio = LocalDate.parse(dataStr, DateTimeFormatter.ISO_LOCAL_DATE);
-            } catch (DateTimeParseException e) {
-                // Data inválida, manter como null
-            }
-        }
-
-        return new AlunoCreateRequest(nome, email, telefone, nivelAluno, dataInicio);
-    }
-
-    private boolean isValidEmail(String email) {
-        if (email == null || email.isEmpty()) {
-            return false;
-        }
-        // Validação simples de email
-        return email.contains("@") && email.contains(".") && email.length() > 5;
     }
 
     private String extrairNumero(String remoteJid) {

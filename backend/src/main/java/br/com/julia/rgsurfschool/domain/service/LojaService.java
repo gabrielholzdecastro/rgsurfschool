@@ -49,5 +49,13 @@ public class LojaService {
         lojaRepository.deleteById(id);
     }
 
+    public void atualizarQuantidadeEstoque(Long id, Integer novaQuantidade) {
+        Loja loja = lojaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Loja não encontrada com id: " + id));
+        
+        loja.setQtdEstoque(novaQuantidade);
+        lojaRepository.save(loja);
+    }
+
 }
 
