@@ -6,12 +6,14 @@ import br.com.julia.rgsurfschool.api.dto.AlunoFindAllResponse;
 import br.com.julia.rgsurfschool.domain.service.AlunoService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/aluno")
+@CrossOrigin(origins = "http://localhost:3000")
 public class AlunoController {
 
     AlunoService alunoService;
