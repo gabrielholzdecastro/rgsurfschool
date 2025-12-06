@@ -1,6 +1,7 @@
 package br.com.julia.rgsurfschool.domain.service;
 
 import br.com.julia.rgsurfschool.api.dto.EvolutionWebhookRequest;
+import br.com.julia.rgsurfschool.domain.enums.StatusPagamento;
 import br.com.julia.rgsurfschool.domain.model.Mensagem;
 import br.com.julia.rgsurfschool.domain.repository.MensagemRepository;
 import org.slf4j.Logger;
@@ -18,14 +19,14 @@ public class MensagemService {
     private static final Logger logger = LoggerFactory.getLogger(MensagemService.class);
 
     private final MensagemRepository mensagemRepository;
-    private final LojaService lojaService;
+    private final VendaService vendaService;
     private final String numeroMonitorado;
 
     public MensagemService(MensagemRepository mensagemRepository,
-                           LojaService lojaService,
+                           VendaService vendaService,
                            @Value("${evolution.api.numero-monitorado:}") String numeroMonitorado) {
         this.mensagemRepository = mensagemRepository;
-        this.lojaService = lojaService;
+        this.vendaService = vendaService;
         this.numeroMonitorado = numeroMonitorado;
     }
 
@@ -69,33 +70,38 @@ public class MensagemService {
         // Processar mensagens apenas se vierem do grupo monitorado
         if (numeroMonitorado != null && !numeroMonitorado.isEmpty() && numeroMonitorado.equals(key.remoteJid())) {
             
-            // Comando de atualização de estoque: ESTOQUE {id_loja} {nova_quantidade}
-            if (texto != null && texto.trim().toUpperCase().startsWith("ESTOQUE ")) {
-                processarComandoEstoque(texto);
+            if (texto != null) {
+                String textoUpper = texto.trim().toUpperCase();
+                // Comandos Financeiros: PAGO {id} ou PENDENTE {id}
+                if (textoUpper.startsWith("PAGO ") || textoUpper.startsWith("PENDENTE ")) {
+                    processarComandoFinanceiro(texto);
+                }
             }
         }
     }
 
-    private void processarComandoEstoque(String texto) {
-        // Formato: ESTOQUE {id_loja} {nova_quantidade}
+    private void processarComandoFinanceiro(String texto) {
+        // Formato: PAGO {id_venda} ou PENDENTE {id_venda}
         String[] partes = texto.trim().split("\\s+");
-        if (partes.length < 3) {
-            logger.warn("Comando ESTOQUE incompleto: {}", texto);
+        if (partes.length < 2) {
+            logger.warn("Comando FINANCEIRO incompleto: {}", texto);
             return;
         }
 
         try {
-            Long idLoja = Long.parseLong(partes[1]);
-            Integer novaQuantidade = Integer.parseInt(partes[2]);
+            String comando = partes[0].toUpperCase();
+            Long idVenda = Long.parseLong(partes[1]);
             
-            lojaService.atualizarQuantidadeEstoque(idLoja, novaQuantidade);
-            logger.info("Estoque da loja ID {} atualizado com sucesso para quantidade {}", idLoja, novaQuantidade);
+            StatusPagamento status = comando.equals("PAGO") ? StatusPagamento.PAGO : StatusPagamento.PENDENTE;
+            
+            vendaService.atualizarStatusPagamento(idVenda, status);
+            logger.info("Venda ID {} atualizada para status {}", idVenda, status);
         } catch (NumberFormatException e) {
-            logger.error("ID ou quantidade inválidos no comando ESTOQUE: {}", texto);
+            logger.error("ID inválido no comando FINANCEIRO: {}", texto);
         } catch (RuntimeException e) {
-            logger.error("Erro ao processar comando ESTOQUE: {}", e.getMessage());
+            logger.error("Erro ao processar comando FINANCEIRO: {}", e.getMessage());
         } catch (Exception e) {
-            logger.error("Erro inesperado ao processar comando ESTOQUE: {}", e.getMessage());
+            logger.error("Erro inesperado ao processar comando FINANCEIRO: {}", e.getMessage());
         }
     }
 
@@ -127,4 +133,3 @@ public class MensagemService {
         return LocalDateTime.ofInstant(Instant.ofEpochSecond(timestamp), ZoneId.systemDefault());
     }
 }
-
