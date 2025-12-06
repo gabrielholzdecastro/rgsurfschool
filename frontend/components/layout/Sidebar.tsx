@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { Waves, Users, ShoppingBag } from "lucide-react";
+import { Waves, Users, ShoppingBag, DollarSign } from "lucide-react";
 
 interface NavItem {
   name: string;
@@ -22,6 +22,11 @@ const navigation: NavItem[] = [
     name: "Loja",
     href: "/loja",
     icon: <ShoppingBag className="w-6 h-6" />,
+  },
+  {
+    name: "Vendas",
+    href: "/vendas",
+    icon: <DollarSign className="w-6 h-6" />,
   },
 ];
 
