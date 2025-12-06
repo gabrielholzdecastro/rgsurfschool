@@ -1,6 +1,6 @@
 package br.com.julia.rgsurfschool.api.dto;
 
-import br.com.julia.rgsurfschool.domain.model.NivelAluno;
+import br.com.julia.rgsurfschool.domain.enums.NivelAluno;
 
 import java.time.LocalDate;
 

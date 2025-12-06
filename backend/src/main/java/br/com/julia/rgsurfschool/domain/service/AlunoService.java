@@ -5,7 +5,6 @@ import br.com.julia.rgsurfschool.api.dto.AlunoCreateResponse;
 import br.com.julia.rgsurfschool.api.dto.AlunoFindAllResponse;
 import br.com.julia.rgsurfschool.api.mapper.AlunoMapper;
 import br.com.julia.rgsurfschool.domain.model.Aluno;
-import br.com.julia.rgsurfschool.domain.model.NivelAluno;
 import br.com.julia.rgsurfschool.domain.repository.AlunoRepository;
 import org.springframework.stereotype.Service;
 
