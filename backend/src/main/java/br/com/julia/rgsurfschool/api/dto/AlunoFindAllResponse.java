@@ -5,10 +5,10 @@ import br.com.julia.rgsurfschool.domain.enums.NivelAluno;
 import java.time.LocalDate;
 
 public record AlunoFindAllResponse(
-        String nome,
-        String email,
-        String telefone,
-        NivelAluno nivelAluno,
-        LocalDate dataInicio
-) {
+                Long id,
+                String nome,
+                String email,
+                String telefone,
+                NivelAluno nivelAluno,
+                LocalDate dataInicio) {
 }

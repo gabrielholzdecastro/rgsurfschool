@@ -23,8 +23,8 @@ public class MensagemService {
     private final String numeroMonitorado;
 
     public MensagemService(MensagemRepository mensagemRepository,
-                           VendaService vendaService,
-                           @Value("${evolution.api.numero-monitorado:}") String numeroMonitorado) {
+            VendaService vendaService,
+            @Value("${evolution.api.numero-monitorado:}") String numeroMonitorado) {
         this.mensagemRepository = mensagemRepository;
         this.vendaService = vendaService;
         this.numeroMonitorado = numeroMonitorado;
@@ -41,16 +41,32 @@ public class MensagemService {
 
         EvolutionWebhookRequest.MessageKey key = webhookRequest.data().key();
 
-        String remoteJid = key.remoteJid();
-        String participant = key.participant();
-        String texto = extrairTexto(webhookRequest.data().message());
-
-        logger.info("Webhook recebido: remoteJid={}, participant={}, texto={}", remoteJid, participant, texto);
-        
-        // Processar apenas mensagens recebidas (não enviadas por nós)
+        // 1. Processar apenas mensagens recebidas (não enviadas por nós)
         if (Boolean.TRUE.equals(key.fromMe())) {
             return;
         }
+
+        // 2. Verificar se vem do grupo monitorado
+        if (numeroMonitorado == null || !numeroMonitorado.equals(key.remoteJid())) {
+            return; // Ignora mensagens de outras origens
+        }
+
+        String texto = extrairTexto(webhookRequest.data().message());
+        if (texto == null) {
+            return;
+        }
+
+        String textoUpper = texto.trim().toUpperCase();
+
+        // 3. Verificar se é um comando válido
+        if (!textoUpper.startsWith("PAGO ") && !textoUpper.startsWith("PENDENTE ")) {
+            return; // Ignora mensagens que não são comandos
+        }
+
+        String remoteJid = key.remoteJid();
+        String participant = key.participant();
+
+        logger.info("Webhook recebido: remoteJid={}, participant={}, texto={}", remoteJid, participant, texto);
 
         String numeroRemetente = extrairNumero(key.remoteJid());
         String messageId = key.id();
@@ -65,19 +81,11 @@ public class MensagemService {
                 .messageId(messageId)
                 .build();
 
+        // 4. Salvar apenas mensagens válidas
         mensagemRepository.save(mensagem);
 
-        // Processar mensagens apenas se vierem do grupo monitorado
-        if (numeroMonitorado != null && !numeroMonitorado.isEmpty() && numeroMonitorado.equals(key.remoteJid())) {
-            
-            if (texto != null) {
-                String textoUpper = texto.trim().toUpperCase();
-                // Comandos Financeiros: PAGO {id} ou PENDENTE {id}
-                if (textoUpper.startsWith("PAGO ") || textoUpper.startsWith("PENDENTE ")) {
-                    processarComandoFinanceiro(texto);
-                }
-            }
-        }
+        // 5. Executar lógica
+        processarComandoFinanceiro(texto);
     }
 
     private void processarComandoFinanceiro(String texto) {
@@ -91,9 +99,9 @@ public class MensagemService {
         try {
             String comando = partes[0].toUpperCase();
             Long idVenda = Long.parseLong(partes[1]);
-            
+
             StatusPagamento status = comando.equals("PAGO") ? StatusPagamento.PAGO : StatusPagamento.PENDENTE;
-            
+
             vendaService.atualizarStatusPagamento(idVenda, status);
             logger.info("Venda ID {} atualizada para status {}", idVenda, status);
         } catch (NumberFormatException e) {

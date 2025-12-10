@@ -8,6 +8,7 @@ import { ErrorMessage } from "@/components/ui/ErrorMessage";
 import { LojaResponse } from "@/types/loja";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { deleteLoja } from "@/lib/api/loja";
+import { Edit, Trash2 } from "lucide-react";
 
 interface LojaTableProps {
   produtos: LojaResponse[];
@@ -121,16 +122,20 @@ export function LojaTable({
               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
                 <Button
                   variant="secondary"
+                  className="p-1.5"
+                  title="Editar"
                   onClick={() => router.push(`/loja/${produto.id}`)}
                 >
-                  Editar
+                  <Edit className="w-4 h-4" />
                 </Button>
                 <Button
                   variant="danger"
+                  className="p-1.5 text-white"
+                  title="Excluir"
                   onClick={() => handleDelete(produto.id)}
                   disabled={deletingId === produto.id}
                 >
-                  {deletingId === produto.id ? "Excluindo..." : "Excluir"}
+                  <Trash2 className="w-4 h-4" />
                 </Button>
               </td>
             </tr>

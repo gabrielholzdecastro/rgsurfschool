@@ -13,6 +13,7 @@ export interface AlunoCreateRequest {
 }
 
 export interface AlunoFindAllResponse {
+  id: number;
   nome: string;
   email: string;
   telefone: string;

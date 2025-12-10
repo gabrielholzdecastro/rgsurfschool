@@ -9,12 +9,12 @@ public class AlunoMapper {
 
     public static AlunoFindAllResponse toFindAllResponse(Aluno aluno) {
         return new AlunoFindAllResponse(
+                aluno.getId(),
                 aluno.getNome(),
                 aluno.getEmail(),
                 aluno.getTelefone(),
                 aluno.getNivelAluno(),
-                aluno.getDataInicio()
-        );
+                aluno.getDataInicio());
     }
 
     public static Aluno toEntity(AlunoCreateRequest request) {
@@ -34,7 +34,6 @@ public class AlunoMapper {
                 aluno.getEmail(),
                 aluno.getTelefone(),
                 aluno.getNivelAluno(),
-                aluno.getDataInicio()
-        );
+                aluno.getDataInicio());
     }
 }

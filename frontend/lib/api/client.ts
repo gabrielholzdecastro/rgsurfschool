@@ -79,3 +79,18 @@ export async function apiDelete(endpoint: string): Promise<void> {
   return handleResponse<void>(response);
 }
 
+export async function apiPatch<T>(
+  endpoint: string,
+  data?: unknown
+): Promise<T> {
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: data ? JSON.stringify(data) : undefined,
+  });
+
+  return handleResponse<T>(response);
+}
+

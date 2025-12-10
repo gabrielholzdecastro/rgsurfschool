@@ -3,7 +3,6 @@ package br.com.julia.rgsurfschool.api.controller;
 import br.com.julia.rgsurfschool.api.dto.VendaCreateRequest;
 import br.com.julia.rgsurfschool.api.dto.VendaResponse;
 import br.com.julia.rgsurfschool.domain.service.VendaService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,11 +11,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/vendas")
-@RequiredArgsConstructor
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "http://localhost:3000")
 public class VendaController {
 
     private final VendaService vendaService;
+
+    public VendaController(VendaService vendaService) {
+        this.vendaService = vendaService;
+    }
 
     @PostMapping
     public ResponseEntity<VendaResponse> realizarVenda(@RequestBody VendaCreateRequest request) {
