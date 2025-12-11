@@ -1,6 +1,7 @@
 export enum Condicao {
   EXCELENTE = "EXCELENTE",
   BOM = "BOM",
+  SEMINOVO = "SEMINOVO",
 }
 
 export interface LojaRequest {
@@ -23,4 +24,3 @@ export interface LojaResponse {
   dataAquisicao: string; // ISO date string
   fornecedor: string;
 }
-

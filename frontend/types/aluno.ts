@@ -19,6 +19,8 @@ export interface AlunoFindAllResponse {
   telefone: string;
   nivelAluno: NivelAluno;
   dataInicio: string; // ISO date string
+  ativo: boolean;
+  dataUltimaAula: string | null;
 }
 
 export interface AlunoCreateResponse {
@@ -30,3 +32,7 @@ export interface AlunoCreateResponse {
   dataInicio: string; // ISO date string
 }
 
+export interface AlunoResumo {
+  id: number;
+  nome: string;
+}

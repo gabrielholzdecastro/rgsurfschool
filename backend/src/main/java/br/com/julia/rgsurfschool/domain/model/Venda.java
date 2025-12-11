@@ -2,6 +2,7 @@ package br.com.julia.rgsurfschool.domain.model;
 
 import br.com.julia.rgsurfschool.domain.enums.MetodoPagamento;
 import br.com.julia.rgsurfschool.domain.enums.StatusPagamento;
+import br.com.julia.rgsurfschool.domain.enums.TipoItemVenda;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,8 +22,24 @@ public class Venda {
     Long id;
 
     @ManyToOne
-    @JoinColumn(name = "loja_id", nullable = false)
+    @JoinColumn(name = "loja_id")
     Loja produto;
+
+    @ManyToOne
+    @JoinColumn(name = "equipamento_id")
+    Equipamento equipamento;
+
+    @ManyToOne
+    @JoinColumn(name = "aula_id")
+    Aula aula;
+
+    @ManyToOne
+    @JoinColumn(name = "trip_id")
+    Trip trip;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_item", nullable = false)
+    TipoItemVenda tipoItem;
 
     @ManyToOne
     @JoinColumn(name = "aluno_id")

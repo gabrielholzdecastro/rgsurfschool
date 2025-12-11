@@ -10,8 +10,16 @@ export enum StatusPagamento {
     PENDENTE = "PENDENTE"
 }
 
+export enum TipoItemVenda {
+    LOJA = "LOJA",
+    EQUIPAMENTO = "EQUIPAMENTO",
+    AULA = "AULA",
+    TRIP = "TRIP"
+}
+
 export interface VendaCreateRequest {
-    produtoId: number;
+    itemId: number;
+    tipoItem: TipoItemVenda;
     alunoId?: number | null;
     nomeComprador?: string;
     quantidade: number;
@@ -21,7 +29,9 @@ export interface VendaCreateRequest {
 
 export interface VendaResponse {
     id: number;
-    nomeProduto: string;
+    itemId: number | null;
+    tipoItem: TipoItemVenda;
+    nomeItem: string;
     nomeComprador: string;
     quantidade: number;
     valorUnitario: number;

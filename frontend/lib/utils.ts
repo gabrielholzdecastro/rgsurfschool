@@ -17,3 +17,7 @@ export function formatCurrency(value: number): string {
   }).format(value);
 }
 
+export function formatDateTime(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleString("pt-BR");
+}

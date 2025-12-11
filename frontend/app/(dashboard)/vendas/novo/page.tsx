@@ -1,21 +1,29 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLoja } from "@/hooks/useLoja";
 import { useAlunos } from "@/hooks/useAlunos";
+import { useEquipamentos } from "@/hooks/useEquipamentos";
+import { useAulas } from "@/hooks/useAulas";
+import { useTrips } from "@/hooks/useTrips";
 import { vendaApi } from "@/lib/api/vendas";
-import { MetodoPagamento, StatusPagamento } from "@/types/venda";
+import { MetodoPagamento, StatusPagamento, TipoItemVenda } from "@/types/venda";
+import { Condicao } from "@/types/loja";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
+import { formatDate, formatDateTime } from "@/lib/utils";
 
 export default function NovaVendaPage() {
   const router = useRouter();
   const { produtos, isLoading: loadingProdutos } = useLoja();
+  const { equipamentos, isLoading: loadingEquipamentos } = useEquipamentos();
+  const { aulas, isLoading: loadingAulas } = useAulas();
+  const { trips, isLoading: loadingTrips } = useTrips();
   const { alunos, isLoading: loadingAlunos } = useAlunos();
 
-  const [produtoId, setProdutoId] = useState<string>("");
+  const [tipoItem, setTipoItem] = useState<TipoItemVenda>(TipoItemVenda.LOJA);
+  const [itemId, setItemId] = useState<string>("");
   const [quantidade, setQuantidade] = useState<number>(1);
   const [modoComprador, setModoComprador] = useState<"aluno" | "avulso">("avulso");
   const [alunoId, setAlunoId] = useState<string>("");
@@ -25,10 +33,37 @@ export default function NovaVendaPage() {
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
 
-  // Derivados
-  const produtoSelecionado = produtos.find((p) => p.id === Number(produtoId));
-  const precoUnitario = produtoSelecionado?.preco || 0;
-  const estoqueAtual = produtoSelecionado?.qtdEstoque || 0;
+  // Item selecionado e dados derivados
+  const itemSelecionado = useMemo(() => {
+    const id = Number(itemId);
+    switch (tipoItem) {
+      case TipoItemVenda.LOJA:
+        return produtos.find((p) => p.id === id);
+      case TipoItemVenda.EQUIPAMENTO:
+        return equipamentos.find((e) => e.id === id);
+      case TipoItemVenda.AULA:
+        return aulas.find((a) => a.id === id);
+      case TipoItemVenda.TRIP:
+        return trips.find((t) => t.id === id);
+      default:
+        return undefined;
+    }
+  }, [aulas, equipamentos, itemId, produtos, tipoItem, trips]);
+
+  const precoUnitario = useMemo(() => {
+    if (!itemSelecionado) return 0;
+    if ("preco" in itemSelecionado) return itemSelecionado.preco || 0;
+    return 0;
+  }, [itemSelecionado]);
+
+  const estoqueAtual = useMemo(() => {
+    if (!itemSelecionado) return 0;
+    if ("qtdEstoque" in itemSelecionado) return itemSelecionado.qtdEstoque || 0;
+    if ("capacidade" in itemSelecionado) return itemSelecionado.capacidade || 0;
+    if ("vagas" in itemSelecionado) return itemSelecionado.vagas || 0;
+    return 0;
+  }, [itemSelecionado]);
+
   const valorTotal = precoUnitario * quantidade;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -36,14 +71,14 @@ export default function NovaVendaPage() {
     setErro(null);
     setLoading(true);
 
-    if (!produtoId) {
-      setErro("Selecione um produto.");
+    if (!itemId) {
+      setErro("Selecione um item.");
       setLoading(false);
       return;
     }
 
-    if (quantidade > estoqueAtual) {
-      setErro(`Estoque insuficiente. Disponível: ${estoqueAtual}`);
+    if (quantidade > estoqueAtual && (tipoItem === TipoItemVenda.LOJA || tipoItem === TipoItemVenda.EQUIPAMENTO || tipoItem === TipoItemVenda.AULA || tipoItem === TipoItemVenda.TRIP)) {
+      setErro(`Quantidade indisponível. Disponível: ${estoqueAtual}`);
       setLoading(false);
       return;
     }
@@ -64,7 +99,8 @@ export default function NovaVendaPage() {
 
     try {
       await vendaApi.realizarVenda({
-        produtoId: Number(produtoId),
+        itemId: Number(itemId),
+        tipoItem,
         quantidade,
         alunoId: modoComprador === "aluno" && alunoId ? Number(alunoId) : null,
         nomeComprador: modoComprador === "avulso" ? nomeComprador : undefined,
@@ -72,20 +108,24 @@ export default function NovaVendaPage() {
         statusPagamento: isPago ? StatusPagamento.PAGO : StatusPagamento.PENDENTE,
       });
       router.push("/vendas");
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setErro("Erro ao realizar venda. Verifique os dados.");
+      setErro(
+        err instanceof Error
+          ? err.message
+          : "Erro ao realizar venda. Verifique os dados."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  if (loadingProdutos || loadingAlunos) {
+  if (loadingProdutos || loadingAlunos || loadingEquipamentos || loadingAulas || loadingTrips) {
     return <div className="p-8">Carregando dados...</div>;
   }
 
   return (
-    <div className="p-8 max-w-2xl mx-auto">
+    <div className="p-8 max-w-3xl mx-auto">
       <h1 className="text-2xl font-bold mb-6">Nova Venda</h1>
 
       <form onSubmit={handleSubmit} className="space-y-6 bg-white p-6 rounded-lg shadow">
@@ -95,30 +135,76 @@ export default function NovaVendaPage() {
           </div>
         )}
 
-        {/* Produto */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Produto</label>
-          <select
-            className="w-full border-gray-300 rounded-md shadow-sm p-2 border"
-            value={produtoId}
-            onChange={(e) => {
-              setProdutoId(e.target.value);
-              setQuantidade(1);
-            }}
-            required
-          >
-            <option value="">Selecione um produto...</option>
-            {produtos.map((p) => (
-              <option key={p.id} value={p.id} disabled={p.qtdEstoque <= 0}>
-                {p.nome} (Estoque: {p.qtdEstoque} - R$ {p.preco.toFixed(2)})
-              </option>
-            ))}
-          </select>
+        {/* Tipo e item */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Item</label>
+            <select
+              className="w-full border-gray-300 rounded-md shadow-sm p-2 border"
+              value={tipoItem}
+              onChange={(e) => {
+                const novoTipo = e.target.value as TipoItemVenda;
+                setTipoItem(novoTipo);
+                setItemId("");
+                setQuantidade(1);
+              }}
+            >
+              <option value={TipoItemVenda.LOJA}>Lojinha</option>
+              <option value={TipoItemVenda.EQUIPAMENTO}>Equipamento (seminovo)</option>
+              <option value={TipoItemVenda.AULA}>Aula (serviço)</option>
+              <option value={TipoItemVenda.TRIP}>Trip (serviço)</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Item</label>
+            <select
+              className="w-full border-gray-300 rounded-md shadow-sm p-2 border"
+              value={itemId}
+              onChange={(e) => {
+                setItemId(e.target.value);
+                setQuantidade(1);
+              }}
+              required
+            >
+              <option value="">Selecione...</option>
+              {tipoItem === TipoItemVenda.LOJA &&
+                produtos.map((p) => (
+                  <option key={p.id} value={p.id} disabled={p.qtdEstoque <= 0}>
+                    {p.nome} (Estoque: {p.qtdEstoque} - R$ {p.preco.toFixed(2)})
+                  </option>
+                ))}
+              {tipoItem === TipoItemVenda.EQUIPAMENTO &&
+                equipamentos
+                  .filter((e) => e.disponivelVenda && e.condicao === Condicao.SEMINOVO)
+                  .map((e) => (
+                    <option key={e.id} value={e.id} disabled={e.qtdEstoque <= 0}>
+                      {e.nome} [{e.condicao}] - R$ {e.preco.toFixed(2)} (Estoque: {e.qtdEstoque})
+                    </option>
+                  ))}
+              {tipoItem === TipoItemVenda.AULA &&
+                aulas.map((a) => (
+                  <option key={a.id} value={a.id} disabled={(a.capacidade ?? 0) <= 0}>
+                    {a.titulo} ({a.capacidade ?? 0} vagas) - R$ {a.preco?.toFixed(2) ?? "0,00"} -{" "}
+                    {a.dataHora ? formatDateTime(a.dataHora) : "Sem data"}
+                  </option>
+                ))}
+              {tipoItem === TipoItemVenda.TRIP &&
+                trips.map((t) => (
+                  <option key={t.id} value={t.id} disabled={(t.vagas ?? 0) <= 0}>
+                    {t.destino} ({t.vagas ?? 0} vagas) - R$ {t.preco?.toFixed(2) ?? "0,00"} - Saída:{" "}
+                    {t.dataSaida ? formatDate(t.dataSaida) : "Sem data"}
+                  </option>
+                ))}
+            </select>
+          </div>
         </div>
 
         {/* Quantidade */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Quantidade</label>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Quantidade {tipoItem === TipoItemVenda.AULA || tipoItem === TipoItemVenda.TRIP ? "(vagas)" : ""}
+          </label>
           <div className="flex items-center gap-4">
             <Input
               type="number"
@@ -126,10 +212,10 @@ export default function NovaVendaPage() {
               max={estoqueAtual}
               value={quantidade}
               onChange={(e) => setQuantidade(Number(e.target.value))}
-              disabled={!produtoId}
+              disabled={!itemId}
               required
             />
-            {produtoSelecionado && (
+            {itemSelecionado && (
               <span className="text-sm text-gray-500">
                 Max: {estoqueAtual}
               </span>
@@ -188,7 +274,7 @@ export default function NovaVendaPage() {
         </div>
 
         {/* Pagamento */}
-        <div className="border-t pt-4 mt-4 grid grid-cols-2 gap-4">
+        <div className="border-t pt-4 mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Método de Pagamento</label>
             <select
@@ -205,7 +291,7 @@ export default function NovaVendaPage() {
           </div>
 
           <div className="flex items-center mt-6">
-             <label className="flex items-center space-x-2 cursor-pointer">
+            <label className="flex items-center space-x-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={isPago}
