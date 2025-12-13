@@ -35,6 +35,15 @@ export function AlunoList({
   }
 
   return (
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {alunos.map((aluno) => (
+        <AlunoCard key={aluno.id} aluno={aluno} />
+      ))}
+=======
+>>>>>>> Stashed changes
     <div className="bg-white rounded-lg shadow overflow-hidden">
       <table className="min-w-full divide-y divide-gray-200">
         <thead className="bg-gray-50">
@@ -84,6 +93,10 @@ export function AlunoList({
           ))}
         </tbody>
       </table>
+<<<<<<< Updated upstream
+=======
+>>>>>>> 99b3da6e2fb43d66adfd6d6a92cddf3db95853cd
+>>>>>>> Stashed changes
     </div>
   );
 }

@@ -8,10 +8,14 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @Setter
 public class AulaCreateRequest {
+    private String titulo;
+    private String descricao;
+    private Integer capacidade;
     private Long alunoId;
     private LocalDate data;
     private LocalTime horaInicio;
@@ -19,4 +23,6 @@ public class AulaCreateRequest {
     private TipoAula tipoAula;
     private BigDecimal valor;
     private StatusPagamento statusPagamento;
+    private List<Long> professoresIds;
+    private List<Long> alunosIds;
 }

@@ -2,6 +2,35 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+import { AulaTable } from "@/components/aulas/AulaTable";
+import { useAulas } from "@/hooks/useAulas";
+
+export default function AulasPage() {
+  const { aulas, isLoading, error, refetch } = useAulas();
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-3xl font-bold text-gray-900">Aulas</h1>
+        <Link href="/aulas/novo">
+          <Button>Nova Aula</Button>
+        </Link>
+      </div>
+
+      <AulaTable
+        aulas={aulas}
+        isLoading={isLoading}
+        error={error || undefined}
+        onRetry={refetch}
+        onDelete={refetch}
+      />
+    </div>
+  );
+=======
+>>>>>>> Stashed changes
 import { AulaList } from "@/components/aulas/AulaList";
 import { useAulas } from "@/hooks/useAulas";
 import { deleteAula, quitarAula } from "@/lib/api/aula";
@@ -51,4 +80,8 @@ export default function AulasPage() {
             />
         </div>
     );
+<<<<<<< Updated upstream
+=======
+>>>>>>> 99b3da6e2fb43d66adfd6d6a92cddf3db95853cd
+>>>>>>> Stashed changes
 }

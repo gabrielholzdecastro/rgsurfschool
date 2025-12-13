@@ -29,7 +29,7 @@ export function LojaTable({
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Tem certeza que deseja excluir este produto?")) {
+    if (!confirm("Tem certeza que deseja excluir este item?")) {
       return;
     }
 
@@ -40,7 +40,7 @@ export function LojaTable({
         onDelete();
       }
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao excluir produto");
+      alert(err instanceof Error ? err.message : "Erro ao excluir item");
     } finally {
       setDeletingId(null);
     }
@@ -58,7 +58,7 @@ export function LojaTable({
     return (
       <div className="text-center py-12">
         <p className="text-gray-500 text-lg">
-          Nenhum produto cadastrado ainda.
+          Nenhum item cadastrado ainda.
         </p>
       </div>
     );
@@ -145,4 +145,3 @@ export function LojaTable({
     </div>
   );
 }
-

@@ -1,5 +1,25 @@
 "use client";
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+import { useParams } from "next/navigation";
+import { AulaForm } from "@/components/aulas/AulaForm";
+
+export default function EditarAulaPage() {
+  const params = useParams();
+  const idParam = Array.isArray(params?.id) ? params?.id[0] : params?.id;
+  const id = idParam ? Number(idParam) : undefined;
+
+  return (
+    <div className="max-w-3xl space-y-6">
+      <h1 className="text-3xl font-bold text-gray-900">Editar Aula</h1>
+      {id ? <AulaForm aulaId={id} /> : <p>Aula não encontrada</p>}
+    </div>
+  );
+}
+=======
+>>>>>>> Stashed changes
 import { use, useEffect, useState } from "react";
 import { AulaForm } from "@/components/aulas/AulaForm";
 import { getAula } from "@/lib/api/aula"; // I need to make sure getAula is exported in lib/api/aula.ts
@@ -62,3 +82,7 @@ export default function EditAulaPage({ params }: EditAulaPageProps) {
 }
 // Wait, I need to check AulaResponse definition. If it lacks alunoId, I am stuck.
 // Checking Types/aula.ts
+<<<<<<< Updated upstream
+=======
+>>>>>>> 99b3da6e2fb43d66adfd6d6a92cddf3db95853cd
+>>>>>>> Stashed changes
