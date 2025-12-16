@@ -4,24 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-<<<<<<< Updated upstream
 import { Waves, Users, ShoppingBag, DollarSign, Calendar } from "lucide-react";
-=======
-<<<<<<< HEAD
-import {
-  Waves,
-  Users,
-  ShoppingBag,
-  DollarSign,
-  GraduationCap,
-  CalendarClock,
-  MapPin,
-  Wrench,
-} from "lucide-react";
-=======
-import { Waves, Users, ShoppingBag, DollarSign, Calendar } from "lucide-react";
->>>>>>> 99b3da6e2fb43d66adfd6d6a92cddf3db95853cd
->>>>>>> Stashed changes
 
 interface NavItem {
   name: string;
@@ -36,39 +19,12 @@ const navigation: NavItem[] = [
     icon: <Users className="w-6 h-6" />,
   },
   {
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-    name: "Professores",
-    href: "/professores",
-    icon: <GraduationCap className="w-6 h-6" />,
-  },
-  {
-    name: "Aulas",
-    href: "/aulas",
-    icon: <CalendarClock className="w-6 h-6" />,
-  },
-  {
-    name: "Trips",
-    href: "/trips",
-    icon: <MapPin className="w-6 h-6" />,
-  },
-  {
-    name: "Equipamentos",
-    href: "/equipamentos",
-    icon: <Wrench className="w-6 h-6" />,
-  },
-  {
-    name: "Lojinha",
-=======
->>>>>>> Stashed changes
     name: "Aulas",
     href: "/aulas",
     icon: <Calendar className="w-6 h-6" />,
   },
   {
     name: "Loja",
->>>>>>> 99b3da6e2fb43d66adfd6d6a92cddf3db95853cd
     href: "/loja",
     icon: <ShoppingBag className="w-6 h-6" />,
   },
@@ -134,3 +90,4 @@ export function Sidebar() {
     </aside>
   );
 }
+

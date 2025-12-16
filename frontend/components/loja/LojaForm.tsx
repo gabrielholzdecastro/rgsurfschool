@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, FormEvent, useEffect, useCallback } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -29,9 +29,13 @@ export function LojaForm({ produtoId, onSuccess }: LojaFormProps) {
     fornecedor: "",
   });
 
-  const loadProduto = useCallback(async () => {
-    if (!produtoId) return;
+  useEffect(() => {
+    if (produtoId) {
+      loadProduto();
+    }
+  }, [produtoId]);
 
+  const loadProduto = async () => {
     try {
       const produtos = await getLojas();
       const produto = produtos.find((p) => p.id === produtoId);
@@ -47,15 +51,13 @@ export function LojaForm({ produtoId, onSuccess }: LojaFormProps) {
         });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar item");
+      setError(
+        err instanceof Error ? err.message : "Erro ao carregar produto"
+      );
     } finally {
       setIsLoading(false);
     }
-  }, [produtoId]);
-
-  useEffect(() => {
-    loadProduto();
-  }, [loadProduto]);
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -74,7 +76,9 @@ export function LojaForm({ produtoId, onSuccess }: LojaFormProps) {
         router.push("/loja");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao salvar item");
+      setError(
+        err instanceof Error ? err.message : "Erro ao salvar produto"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -187,3 +191,4 @@ export function LojaForm({ produtoId, onSuccess }: LojaFormProps) {
     </form>
   );
 }
+

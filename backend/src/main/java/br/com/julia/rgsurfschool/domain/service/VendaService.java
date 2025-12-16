@@ -4,17 +4,10 @@ import br.com.julia.rgsurfschool.api.dto.VendaCreateRequest;
 import br.com.julia.rgsurfschool.api.dto.VendaResponse;
 import br.com.julia.rgsurfschool.api.mapper.VendaMapper;
 import br.com.julia.rgsurfschool.domain.enums.StatusPagamento;
-import br.com.julia.rgsurfschool.domain.enums.TipoItemVenda;
 import br.com.julia.rgsurfschool.domain.model.Aluno;
 import br.com.julia.rgsurfschool.domain.model.Loja;
-import br.com.julia.rgsurfschool.domain.model.Aula;
-import br.com.julia.rgsurfschool.domain.model.Trip;
-import br.com.julia.rgsurfschool.domain.model.Equipamento;
 import br.com.julia.rgsurfschool.domain.model.Venda;
 import br.com.julia.rgsurfschool.domain.repository.AlunoRepository;
-import br.com.julia.rgsurfschool.domain.repository.AulaRepository;
-import br.com.julia.rgsurfschool.domain.repository.TripRepository;
-import br.com.julia.rgsurfschool.domain.repository.EquipamentoRepository;
 import br.com.julia.rgsurfschool.domain.repository.LojaRepository;
 import br.com.julia.rgsurfschool.domain.repository.VendaRepository;
 import lombok.RequiredArgsConstructor;
@@ -33,32 +26,46 @@ public class VendaService {
     private final VendaRepository vendaRepository;
     private final LojaRepository lojaRepository;
     private final AlunoRepository alunoRepository;
-    private final EquipamentoRepository equipamentoRepository;
-    private final AulaRepository aulaRepository;
-    private final TripRepository tripRepository;
     private final VendaMapper vendaMapper;
 
     @Transactional
     public VendaResponse realizarVenda(VendaCreateRequest request) {
-        validarPagamentoPendente(request);
+        Loja produto = lojaRepository.findById(request.getProdutoId())
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
 
-        Aluno aluno = buscarAluno(request.getAlunoId());
+        if (produto.getQtdEstoque() < request.getQuantidade()) {
+            throw new RuntimeException("Estoque insuficiente. Estoque atual: " + produto.getQtdEstoque());
+        }
 
-        int quantidade = request.getQuantidade() != null ? request.getQuantidade() : 1;
-        ItemVendaData itemData = carregarItem(request, quantidade);
+        // Se venda for fiado (PENDENTE), precisa ter identificação
+        if (request.getStatusPagamento() == StatusPagamento.PENDENTE) {
+            boolean temAluno = request.getAlunoId() != null;
+            boolean temNome = request.getNomeComprador() != null && !request.getNomeComprador().trim().isEmpty();
+            
+            if (!temAluno && !temNome) {
+                throw new RuntimeException("Para vendas 'Fiado' (Pendentes), é obrigatório identificar o comprador (Aluno ou Nome).");
+            }
+        }
 
-        BigDecimal valorTotal = itemData.preco.multiply(BigDecimal.valueOf(quantidade));
+        Aluno aluno = null;
+        if (request.getAlunoId() != null) {
+            aluno = alunoRepository.findById(request.getAlunoId())
+                    .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
+        }
+
+        // Baixa de Estoque
+        produto.setQtdEstoque(produto.getQtdEstoque() - request.getQuantidade());
+        lojaRepository.save(produto);
+
+        // Criação da Venda
+        BigDecimal valorTotal = produto.getPreco().multiply(BigDecimal.valueOf(request.getQuantidade()));
 
         Venda venda = Venda.builder()
-                .produto(itemData.loja)
-                .equipamento(itemData.equipamento)
-                .aula(itemData.aula)
-                .trip(itemData.trip)
-                .tipoItem(request.getTipoItem())
+                .produto(produto)
                 .aluno(aluno)
                 .nomeComprador(request.getNomeComprador())
-                .quantidade(quantidade)
-                .valorUnitario(itemData.preco)
+                .quantidade(request.getQuantidade())
+                .valorUnitario(produto.getPreco())
                 .valorTotal(valorTotal)
                 .metodoPagamento(request.getMetodoPagamento())
                 .statusPagamento(request.getStatusPagamento())
@@ -88,128 +95,5 @@ public class VendaService {
 
         venda.setStatusPagamento(status);
         vendaRepository.save(venda);
-    }
-
-    private void validarPagamentoPendente(VendaCreateRequest request) {
-        if (request.getStatusPagamento() == StatusPagamento.PENDENTE) {
-            boolean temAluno = request.getAlunoId() != null;
-            boolean temNome = request.getNomeComprador() != null && !request.getNomeComprador().trim().isEmpty();
-
-            if (!temAluno && !temNome) {
-                throw new RuntimeException("Para vendas 'Fiado' (Pendentes), é obrigatório identificar o comprador (Aluno ou Nome).");
-            }
-        }
-    }
-
-    private Aluno buscarAluno(Long alunoId) {
-        if (alunoId == null) {
-            return null;
-        }
-        return alunoRepository.findById(alunoId)
-                .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
-    }
-
-    private ItemVendaData carregarItem(VendaCreateRequest request, Integer quantidade) {
-        if (request.getTipoItem() == null) {
-            throw new RuntimeException("Tipo do item é obrigatório");
-        }
-
-        if (quantidade <= 0) {
-            throw new RuntimeException("Quantidade inválida");
-        }
-
-        return switch (request.getTipoItem()) {
-            case LOJA -> carregarProdutoLoja(request.getItemId(), quantidade);
-            case EQUIPAMENTO -> carregarEquipamento(request.getItemId(), quantidade);
-            case AULA -> carregarAula(request.getItemId(), quantidade);
-            case TRIP -> carregarTrip(request.getItemId(), quantidade);
-        };
-    }
-
-    private ItemVendaData carregarProdutoLoja(Long itemId, Integer quantidade) {
-        Loja produto = lojaRepository.findById(itemId)
-                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
-
-        if (produto.getQtdEstoque() < quantidade) {
-            throw new RuntimeException("Estoque insuficiente. Estoque atual: " + produto.getQtdEstoque());
-        }
-
-        produto.setQtdEstoque(produto.getQtdEstoque() - quantidade);
-        lojaRepository.save(produto);
-
-        return ItemVendaData.deProduto(produto, produto.getPreco());
-    }
-
-    private ItemVendaData carregarEquipamento(Long itemId, Integer quantidade) {
-        Equipamento equipamento = equipamentoRepository.findById(itemId)
-                .orElseThrow(() -> new RuntimeException("Equipamento não encontrado"));
-
-        if (Boolean.FALSE.equals(equipamento.getDisponivelVenda())) {
-            throw new RuntimeException("Equipamento não está disponível para venda");
-        }
-
-        if (equipamento.getQtdEstoque() < quantidade) {
-            throw new RuntimeException("Estoque insuficiente. Estoque atual: " + equipamento.getQtdEstoque());
-        }
-
-        equipamento.setQtdEstoque(equipamento.getQtdEstoque() - quantidade);
-        if (equipamento.getQtdEstoque() <= 0) {
-            equipamento.setDisponivelVenda(false);
-        }
-        equipamentoRepository.save(equipamento);
-
-        return ItemVendaData.deEquipamento(equipamento, equipamento.getPreco());
-    }
-
-    private ItemVendaData carregarAula(Long itemId, Integer quantidade) {
-        Aula aula = aulaRepository.findById(itemId)
-                .orElseThrow(() -> new RuntimeException("Aula não encontrada"));
-
-        if (aula.getCapacidade() != null && aula.getCapacidade() < quantidade) {
-            throw new RuntimeException("Capacidade insuficiente para a aula. Vagas: " + aula.getCapacidade());
-        }
-
-        if (aula.getCapacidade() != null) {
-            aula.setCapacidade(aula.getCapacidade() - quantidade);
-            aulaRepository.save(aula);
-        }
-
-        BigDecimal preco = aula.getPreco() != null ? aula.getPreco() : BigDecimal.ZERO;
-        return ItemVendaData.deAula(aula, preco);
-    }
-
-    private ItemVendaData carregarTrip(Long itemId, Integer quantidade) {
-        Trip trip = tripRepository.findById(itemId)
-                .orElseThrow(() -> new RuntimeException("Trip não encontrada"));
-
-        if (trip.getVagas() != null && trip.getVagas() < quantidade) {
-            throw new RuntimeException("Vagas insuficientes para a trip. Vagas: " + trip.getVagas());
-        }
-
-        if (trip.getVagas() != null) {
-            trip.setVagas(trip.getVagas() - quantidade);
-            tripRepository.save(trip);
-        }
-
-        BigDecimal preco = trip.getPreco() != null ? trip.getPreco() : BigDecimal.ZERO;
-        return ItemVendaData.deTrip(trip, preco);
-    }
-
-    private record ItemVendaData(Loja loja, Equipamento equipamento, Aula aula, Trip trip, BigDecimal preco) {
-        static ItemVendaData deProduto(Loja loja, BigDecimal preco) {
-            return new ItemVendaData(loja, null, null, null, preco);
-        }
-
-        static ItemVendaData deEquipamento(Equipamento equipamento, BigDecimal preco) {
-            return new ItemVendaData(null, equipamento, null, null, preco);
-        }
-
-        static ItemVendaData deAula(Aula aula, BigDecimal preco) {
-            return new ItemVendaData(null, null, aula, null, preco);
-        }
-
-        static ItemVendaData deTrip(Trip trip, BigDecimal preco) {
-            return new ItemVendaData(null, null, null, trip, preco);
-        }
     }
 }

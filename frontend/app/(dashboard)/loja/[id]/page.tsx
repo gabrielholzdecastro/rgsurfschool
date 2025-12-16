@@ -9,10 +9,11 @@ export default function EditarProdutoPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">Editar Item</h1>
+      <h1 className="text-3xl font-bold text-gray-900">Editar Produto</h1>
       <div className="max-w-2xl">
-        {id ? <LojaForm produtoId={id} /> : <p>Item não encontrado</p>}
+        {id ? <LojaForm produtoId={id} /> : <p>Produto não encontrado</p>}
       </div>
     </div>
   );
 }
+

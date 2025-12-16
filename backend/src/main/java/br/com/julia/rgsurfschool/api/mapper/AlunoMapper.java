@@ -5,21 +5,16 @@ import br.com.julia.rgsurfschool.api.dto.AlunoCreateResponse;
 import br.com.julia.rgsurfschool.api.dto.AlunoFindAllResponse;
 import br.com.julia.rgsurfschool.domain.model.Aluno;
 
-import java.time.LocalDate;
-
 public class AlunoMapper {
 
-    public static AlunoFindAllResponse toFindAllResponse(Aluno aluno, boolean ativo, LocalDate dataUltimaAula) {
+    public static AlunoFindAllResponse toFindAllResponse(Aluno aluno) {
         return new AlunoFindAllResponse(
                 aluno.getId(),
                 aluno.getNome(),
                 aluno.getEmail(),
                 aluno.getTelefone(),
                 aluno.getNivelAluno(),
-                aluno.getDataInicio(),
-                ativo,
-                dataUltimaAula
-        );
+                aluno.getDataInicio());
     }
 
     public static Aluno toEntity(AlunoCreateRequest request) {

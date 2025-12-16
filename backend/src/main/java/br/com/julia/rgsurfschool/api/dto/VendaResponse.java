@@ -2,7 +2,6 @@ package br.com.julia.rgsurfschool.api.dto;
 
 import br.com.julia.rgsurfschool.domain.enums.MetodoPagamento;
 import br.com.julia.rgsurfschool.domain.enums.StatusPagamento;
-import br.com.julia.rgsurfschool.domain.enums.TipoItemVenda;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,9 +16,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class VendaResponse {
     private Long id;
-    private Long itemId;
-    private TipoItemVenda tipoItem;
-    private String nomeItem;
+    private String nomeProduto;
     private String nomeComprador;
     private Integer quantidade;
     private BigDecimal valorUnitario;
