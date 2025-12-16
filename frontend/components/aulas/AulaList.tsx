@@ -1,13 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
+import { DataTable, Column, TableAction } from "@/components/ui/DataTable";
 import { AulaResponse } from "@/types/aula";
-import { Loading } from "@/components/ui/Loading";
-import { ErrorMessage } from "@/components/ui/ErrorMessage";
-import { formatDate } from "@/lib/utils";
-import { Trash2, Edit, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/Button";
-
-import Link from "next/link";
+import { formatDate, formatCurrency } from "@/lib/utils";
+import { Edit, Trash2, CheckCircle } from "lucide-react";
 
 interface AulaListProps {
     aulas: AulaResponse[];
@@ -26,103 +23,101 @@ export function AulaList({
     onDelete,
     onPay,
 }: AulaListProps) {
-    if (isLoading) {
-        return <Loading />;
-    }
+    const router = useRouter();
 
-    if (error) {
-        return <ErrorMessage message={error} onRetry={onRetry} />;
-    }
+    const handleDelete = (aula: AulaResponse) => {
+        if (onDelete) {
+            if (confirm("Tem certeza que deseja excluir esta aula?")) {
+                onDelete(aula.id);
+            }
+        }
+    };
 
-    if (aulas.length === 0) {
-        return (
-            <div className="text-center py-12">
-                <p className="text-gray-500 text-lg">Nenhuma aula agendada.</p>
-            </div>
-        );
-    }
+    const handlePay = (aula: AulaResponse) => {
+        if (onPay) {
+            if (confirm("Confirmar pagamento desta aula?")) {
+                onPay(aula.id);
+            }
+        }
+    };
+
+    const columns: Column<AulaResponse>[] = [
+        {
+            key: "nomeAluno",
+            label: "Aluno",
+            className: "text-sm font-medium text-gray-900",
+        },
+        {
+            key: "data",
+            label: "Data",
+            render: (aula) => formatDate(aula.data),
+        },
+        {
+            key: "horaInicio",
+            label: "Horário",
+            render: (aula) => `${aula.horaInicio} - ${aula.horaFim}`,
+        },
+        {
+            key: "tipoAula",
+            label: "Tipo",
+            render: (aula) =>
+                aula.tipoAula === "KITE_SURF" ? "Kite Surf" : "Surfe",
+        },
+        {
+            key: "valor",
+            label: "Valor",
+            render: (aula) => formatCurrency(aula.valor),
+        },
+        {
+            key: "statusPagamento",
+            label: "Status",
+            render: (aula) => (
+                <span
+                    className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                        aula.statusPagamento === "PAGO"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                    }`}
+                >
+                    {aula.statusPagamento}
+                </span>
+            ),
+        },
+    ];
+
+    const actions: TableAction<AulaResponse>[] = [
+        {
+            label: "Alterar",
+            icon: <Edit className="w-4 h-4" />,
+            onClick: (aula) => router.push(`/aulas/${aula.id}`),
+            variant: "secondary",
+        },
+        {
+            label: "Excluir",
+            icon: <Trash2 className="w-4 h-4" />,
+            onClick: handleDelete,
+            variant: "danger",
+            className: "text-white",
+        },
+        {
+            label: "Quitar",
+            icon: <CheckCircle className="w-4 h-4" />,
+            onClick: handlePay,
+            variant: "outline",
+            condition: (aula) => aula.statusPagamento === "PENDENTE",
+            className: "text-green-600 border-green-600 hover:bg-green-50",
+        },
+    ];
 
     return (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-            <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left text-gray-500">
-                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3">Aluno</th>
-                            <th className="px-6 py-3">Data</th>
-                            <th className="px-6 py-3">Horário</th>
-                            <th className="px-6 py-3">Tipo</th>
-                            <th className="px-6 py-3">Valor</th>
-                            <th className="px-6 py-3">Status</th>
-                            <th className="px-6 py-3 text-right">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {aulas.map((aula) => (
-                            <tr key={aula.id} className="bg-white border-b hover:bg-gray-50">
-                                <td className="px-6 py-4 font-medium text-gray-900">
-                                    {aula.nomeAluno}
-                                </td>
-                                <td className="px-6 py-4">
-                                    {formatDate(aula.data)}
-                                </td>
-                                <td className="px-6 py-4">
-                                    {aula.horaInicio} - {aula.horaFim}
-                                </td>
-                                <td className="px-6 py-4">
-                                    {aula.tipoAula === "KITE_SURF" ? "Kite Surf" : "Surfe"}
-                                </td>
-                                <td className="px-6 py-4">
-                                    R$ {aula.valor.toFixed(2)}
-                                </td>
-                                <td className="px-6 py-4">
-                                    <span
-                                        className={`px-2 py-1 rounded-full text-xs font-semibold ${aula.statusPagamento === "PAGO"
-                                            ? "bg-green-100 text-green-800"
-                                            : "bg-yellow-100 text-yellow-800"
-                                            }`}
-                                    >
-                                        {aula.statusPagamento}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right whitespace-nowrap space-x-2">
-                                    {(onDelete || onPay) && (
-                                        <>
-                                            {onPay && aula.statusPagamento === "PENDENTE" && (
-                                                <Button
-                                                    variant="outline"
-                                                    className="text-green-600 border-green-600 hover:bg-green-50 p-1.5"
-                                                    title="Quitar"
-                                                    onClick={() => onPay(aula.id)}
-                                                >
-                                                    <CheckCircle className="w-4 h-4" />
-                                                </Button>
-                                            )}
-
-                                            <Link href={`/aulas/${aula.id}`}>
-                                                <Button variant="secondary" className="p-1.5" title="Editar">
-                                                    <Edit className="w-4 h-4" />
-                                                </Button>
-                                            </Link>
-
-                                            {onDelete && (
-                                                <Button
-                                                    variant="danger"
-                                                    className="text-white p-1.5"
-                                                    title="Excluir"
-                                                    onClick={() => onDelete(aula.id)}
-                                                >
-                                                    <Trash2 className="w-5 h-5" />
-                                                </Button>
-                                            )}
-                                        </>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-        </div>
+        <DataTable
+            data={aulas}
+            columns={columns}
+            isLoading={isLoading}
+            error={error}
+            emptyMessage="Nenhuma aula agendada."
+            onRetry={onRetry}
+            actions={actions}
+        />
     );
 }

@@ -1,15 +1,17 @@
 "use client";
 
-
-import { Loading } from "@/components/ui/Loading";
-import { ErrorMessage } from "@/components/ui/ErrorMessage";
+import { useRouter } from "next/navigation";
+import { DataTable, Column, TableAction } from "@/components/ui/DataTable";
 import { AlunoFindAllResponse } from "@/types/aluno";
+import { formatDate } from "@/lib/utils";
+import { Edit, Trash2 } from "lucide-react";
 
 interface AlunoListProps {
   alunos: AlunoFindAllResponse[];
   isLoading?: boolean;
   error?: string;
   onRetry?: () => void;
+  onDelete?: (id: number) => void;
 }
 
 export function AlunoList({
@@ -17,73 +19,66 @@ export function AlunoList({
   isLoading,
   error,
   onRetry,
+  onDelete,
 }: AlunoListProps) {
-  if (isLoading) {
-    return <Loading />;
-  }
+  const router = useRouter();
 
-  if (error) {
-    return <ErrorMessage message={error} onRetry={onRetry} />;
-  }
+  const columns: Column<AlunoFindAllResponse>[] = [
+    {
+      key: "nome",
+      label: "Nome",
+      className: "text-sm font-medium text-gray-900",
+    },
+    {
+      key: "telefone",
+      label: "Telefone",
+    },
+    {
+      key: "email",
+      label: "Email",
+    },
+    {
+      key: "nivelAluno",
+      label: "Nível",
+    },
+    {
+      key: "dataInicio",
+      label: "Data Início",
+      render: (aluno) =>
+        aluno.dataInicio ? formatDate(aluno.dataInicio) : "-",
+    },
+  ];
 
-  if (alunos.length === 0) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">Nenhum aluno cadastrado ainda.</p>
-      </div>
-    );
-  }
+  const actions: TableAction<AlunoFindAllResponse>[] = [
+    {
+      label: "Alterar",
+      icon: <Edit className="w-4 h-4" />,
+      onClick: (aluno) => router.push(`/alunos/${aluno.id}`),
+      variant: "secondary",
+    },
+    {
+      label: "Excluir",
+      icon: <Trash2 className="w-4 h-4" />,
+      onClick: (aluno) => {
+        if (onDelete) {
+          if (confirm("Tem certeza que deseja excluir este aluno?")) {
+            onDelete(aluno.id);
+          }
+        }
+      },
+      variant: "danger",
+    },
+  ];
 
   return (
-    <div className="bg-white rounded-lg shadow overflow-hidden">
-      <table className="min-w-full divide-y divide-gray-200">
-        <thead className="bg-gray-50">
-          <tr>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Nome
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Telefone
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Email
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Nível
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Data Início
-            </th>
-            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-              Ações
-            </th>
-          </tr>
-        </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
-          {alunos.map((aluno) => (
-            <tr key={aluno.id}>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                {aluno.nome}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {aluno.telefone}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {aluno.email}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {aluno.nivelAluno}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {aluno.dataInicio ? new Date(aluno.dataInicio).toLocaleDateString() : "-"}
-              </td>
-              <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                {/* Actions placeholder */}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <DataTable
+      data={alunos}
+      columns={columns}
+      isLoading={isLoading}
+      error={error}
+      emptyMessage="Nenhum aluno cadastrado ainda."
+      onRetry={onRetry}
+      actions={actions}
+    />
   );
 }

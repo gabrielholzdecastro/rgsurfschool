@@ -21,6 +21,16 @@ export function useVendas() {
     }
   };
 
+  const excluirVenda = async (id: number) => {
+    try {
+      await vendaApi.excluirVenda(id);
+      await carregarVendas(); // Recarrega a lista
+    } catch (err) {
+      console.error("Erro ao excluir venda", err);
+      throw err;
+    }
+  };
+
   const quitarVenda = async (id: number) => {
     try {
       await vendaApi.quitarVenda(id);
@@ -35,5 +45,12 @@ export function useVendas() {
     carregarVendas();
   }, []);
 
-  return { vendas, loading, error, recarregar: carregarVendas, quitarVenda };
+  return { 
+    vendas, 
+    loading, 
+    error, 
+    recarregar: carregarVendas, 
+    excluirVenda,
+    quitarVenda 
+  };
 }
