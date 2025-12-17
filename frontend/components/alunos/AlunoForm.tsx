@@ -10,9 +10,10 @@ import { createAluno } from "@/lib/api/alunos";
 
 interface AlunoFormProps {
   onSuccess?: () => void;
+  onClose?: () => void;
 }
 
-export function AlunoForm({ onSuccess }: AlunoFormProps) {
+export function AlunoForm({ onSuccess, onClose }: AlunoFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,9 +33,12 @@ export function AlunoForm({ onSuccess }: AlunoFormProps) {
 
     try {
       await createAluno(formData);
+      if (onClose) {
+        onClose();
+      }
       if (onSuccess) {
         onSuccess();
-      } else {
+      } else if (!onClose) {
         router.push("/alunos");
       }
     } catch (err) {
@@ -108,16 +112,22 @@ export function AlunoForm({ onSuccess }: AlunoFormProps) {
         }
       />
 
-      <div className="flex gap-4">
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Salvando..." : "Salvar"}
-        </Button>
+      <div className="flex justify-end gap-3 mt-6">
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.back()}
+          onClick={() => {
+            if (onClose) {
+              onClose();
+            } else {
+              router.back();
+            }
+          }}
         >
           Cancelar
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          Salvar
         </Button>
       </div>
     </form>

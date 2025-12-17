@@ -11,9 +11,10 @@ import { createProduto, updateProduto, getProdutos } from "@/lib/api/produto";
 interface ProdutoFormProps {
   produtoId?: number;
   onSuccess?: () => void;
+  onClose?: () => void;
 }
 
-export function ProdutoForm({ produtoId, onSuccess }: ProdutoFormProps) {
+export function ProdutoForm({ produtoId, onSuccess, onClose }: ProdutoFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(!!produtoId);
@@ -72,9 +73,12 @@ export function ProdutoForm({ produtoId, onSuccess }: ProdutoFormProps) {
       } else {
         await createProduto(formData);
       }
+      if (onClose) {
+        onClose();
+      }
       if (onSuccess) {
         onSuccess();
-      } else {
+      } else if (!onClose) {
         router.push("/produtos");
       }
     } catch (err) {
@@ -178,16 +182,22 @@ export function ProdutoForm({ produtoId, onSuccess }: ProdutoFormProps) {
         }
       />
 
-      <div className="flex gap-4">
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Salvando..." : "Salvar"}
-        </Button>
+      <div className="flex justify-end gap-3 mt-6">
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.back()}
+          onClick={() => {
+            if (onClose) {
+              onClose();
+            } else {
+              router.back();
+            }
+          }}
         >
           Cancelar
+        </Button>
+        <Button type="submit" disabled={isSubmitting}>
+          Salvar
         </Button>
       </div>
     </form>

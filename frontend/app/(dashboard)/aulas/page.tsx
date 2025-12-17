@@ -1,14 +1,17 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { AulaList } from "@/components/aulas/AulaList";
 import { useAulas } from "@/hooks/useAulas";
 import { deleteAula, quitarAula } from "@/lib/api/aula";
+import { Modal } from "@/components/ui/Modal";
+import { AulaForm } from "@/components/aulas/AulaForm";
 
 
 export default function AulasPage() {
     const { aulas, isLoading, error, refetch } = useAulas();
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleDelete = async (id: number) => {
         if (confirm("Tem certeza que deseja excluir esta aula?")) {
@@ -36,9 +39,7 @@ export default function AulasPage() {
         <div className="space-y-6">
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-gray-900">Aulas</h1>
-                <Link href="/aulas/novo">
-                    <Button>Nova Aula</Button>
-                </Link>
+                <Button onClick={() => setIsModalOpen(true)}>Nova Aula</Button>
             </div>
 
             <AulaList
@@ -49,6 +50,21 @@ export default function AulasPage() {
                 onDelete={handleDelete}
                 onPay={handlePay}
             />
+
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title="Nova Aula"
+                size="lg"
+            >
+                <AulaForm
+                    onSuccess={() => {
+                        setIsModalOpen(false);
+                        refetch();
+                    }}
+                    onClose={() => setIsModalOpen(false)}
+                />
+            </Modal>
         </div>
     );
 }

@@ -13,9 +13,10 @@ import { useAlunos } from "@/hooks/useAlunos";
 interface AulaFormProps {
     initialData?: AulaCreateRequest & { id?: number };
     onSuccess?: () => void;
+    onClose?: () => void;
 }
 
-export function AulaForm({ initialData, onSuccess }: AulaFormProps) {
+export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
     const router = useRouter();
     const { alunos } = useAlunos();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -65,9 +66,12 @@ export function AulaForm({ initialData, onSuccess }: AulaFormProps) {
                 await createAula(formData);
             }
 
+            if (onClose) {
+                onClose();
+            }
             if (onSuccess) {
                 onSuccess();
-            } else {
+            } else if (!onClose) {
                 router.push("/aulas");
             }
         } catch (err) {
@@ -152,16 +156,22 @@ export function AulaForm({ initialData, onSuccess }: AulaFormProps) {
                 <option value="PAGO">Pago</option>
             </Select>
 
-            <div className="flex gap-4 pt-4">
-                <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Salvando..." : "Salvar"}
-                </Button>
+            <div className="flex justify-end gap-3 mt-6">
                 <Button
                     type="button"
                     variant="outline"
-                    onClick={() => router.back()}
+                    onClick={() => {
+                        if (onClose) {
+                            onClose();
+                        } else {
+                            router.back();
+                        }
+                    }}
                 >
                     Cancelar
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                    Salvar
                 </Button>
             </div>
         </form>

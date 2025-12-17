@@ -2,24 +2,24 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { ProdutoTable } from "@/components/produtos/ProdutoTable";
-import { useProduto } from "@/hooks/useProduto";
+import { ProfessorTable } from "@/components/professores/ProfessorTable";
+import { useProfessores } from "@/hooks/useProfessores";
 import { Modal } from "@/components/ui/Modal";
-import { ProdutoForm } from "@/components/produtos/ProdutoForm";
+import { ProfessorForm } from "@/components/professores/ProfessorForm";
 
-export default function ProdutosPage() {
-  const { produtos, isLoading, error, refetch } = useProduto();
+export default function ProfessoresPage() {
+  const { professores, isLoading, error, refetch } = useProfessores();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Produtos</h1>
-        <Button onClick={() => setIsModalOpen(true)}>Novo Produto</Button>
+        <h1 className="text-3xl font-bold text-gray-900">Professores</h1>
+        <Button onClick={() => setIsModalOpen(true)}>Novo Professor</Button>
       </div>
 
-      <ProdutoTable
-        produtos={produtos}
+      <ProfessorTable
+        professores={professores}
         isLoading={isLoading}
         error={error || undefined}
         onRetry={refetch}
@@ -29,10 +29,10 @@ export default function ProdutosPage() {
       <Modal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title="Novo Produto"
-        size="lg"
+        title="Novo Professor"
+        size="md"
       >
-        <ProdutoForm
+        <ProfessorForm
           onSuccess={() => {
             setIsModalOpen(false);
             refetch();
