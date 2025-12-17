@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { Waves, Users, ShoppingBag, DollarSign, Calendar } from "lucide-react";
+import { Waves, Users, ShoppingBag, DollarSign, Calendar, GraduationCap } from "lucide-react";
 
 interface NavItem {
   name: string;
@@ -17,6 +17,11 @@ const navigation: NavItem[] = [
     name: "Alunos",
     href: "/alunos",
     icon: <Users className="w-6 h-6" />,
+  },
+  {
+    name: "Professores",
+    href: "/professores",
+    icon: <GraduationCap className="w-6 h-6" />,
   },
   {
     name: "Aulas",
