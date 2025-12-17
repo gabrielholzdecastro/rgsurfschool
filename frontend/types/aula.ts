@@ -1,4 +1,3 @@
-export type TipoAula = "SURF" | "KITE_SURF";
 export type StatusPagamento = "PAGO" | "PENDENTE";
 
 export interface AulaCreateRequest {
@@ -6,7 +5,7 @@ export interface AulaCreateRequest {
     data: string; // yyyy-MM-dd
     horaInicio: string; // HH:mm
     horaFim: string; // HH:mm
-    tipoAula: TipoAula;
+    tipoAulaId: number;
     valor: number;
     statusPagamento: StatusPagamento;
 }
@@ -18,7 +17,8 @@ export interface AulaResponse {
     data: string;
     horaInicio: string;
     horaFim: string;
-    tipoAula: TipoAula;
+    tipoAulaId: number;
+    nomeTipoAula: string;
     valor: number;
     statusPagamento: StatusPagamento;
 }

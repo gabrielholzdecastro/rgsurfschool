@@ -43,15 +43,11 @@ export default function EditAulaPage({ params }: EditAulaPageProps) {
                 <AulaForm
                     initialData={{
                         id: aula.id,
-                        alunoId: 0, // Should be aula.alunoId? I need to check if response has it.
-                        // Problem: AulaResponse has student NAME but not ID?
-                        // Let's check AulaResponse again.
-                        // If it doesn't have ID, I can't pre-fill the select.
-                        // I'll check response type.
+                        alunoId: aula.alunoId,
                         data: aula.data,
                         horaInicio: aula.horaInicio,
                         horaFim: aula.horaFim,
-                        tipoAula: aula.tipoAula,
+                        tipoAulaId: aula.tipoAulaId,
                         valor: aula.valor,
                         statusPagamento: aula.statusPagamento,
                     }}

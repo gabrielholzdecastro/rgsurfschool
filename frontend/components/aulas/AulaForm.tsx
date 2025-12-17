@@ -6,9 +6,10 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { TimeSelect } from "@/components/ui/TimeSelect";
 import { Button } from "@/components/ui/Button";
-import { AulaCreateRequest, TipoAula, StatusPagamento } from "@/types/aula";
+import { AulaCreateRequest, StatusPagamento } from "@/types/aula";
 import { createAula, updateAula } from "@/lib/api/aula";
 import { useAlunos } from "@/hooks/useAlunos";
+import { useTipoAulas } from "@/hooks/useTipoAulas";
 
 interface AulaFormProps {
     initialData?: AulaCreateRequest & { id?: number };
@@ -19,6 +20,7 @@ interface AulaFormProps {
 export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
     const router = useRouter();
     const { alunos } = useAlunos();
+    const { tipoAulas } = useTipoAulas();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +29,7 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
         data: initialData?.data || new Date().toISOString().split("T")[0],
         horaInicio: initialData?.horaInicio || "",
         horaFim: initialData?.horaFim || "",
-        tipoAula: initialData?.tipoAula || "SURF",
+        tipoAulaId: initialData?.tipoAulaId || 0,
         valor: initialData?.valor || 0,
         statusPagamento: initialData?.statusPagamento || "PENDENTE",
     });
@@ -55,6 +57,12 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
 
         if (formData.alunoId === 0) {
             setError("Selecione um aluno");
+            setIsSubmitting(false);
+            return;
+        }
+
+        if (formData.tipoAulaId === 0) {
+            setError("Selecione um tipo de aula");
             setIsSubmitting(false);
             return;
         }
@@ -130,11 +138,15 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
             <Select
                 label="Tipo de Aula *"
                 required
-                value={formData.tipoAula}
-                onChange={(e) => setFormData({ ...formData, tipoAula: e.target.value as TipoAula })}
+                value={formData.tipoAulaId > 0 ? formData.tipoAulaId.toString() : ""}
+                onChange={(e) => setFormData({ ...formData, tipoAulaId: Number(e.target.value) })}
             >
-                <option value="SURF">Surfe</option>
-                <option value="KITE_SURF">Kite Surf</option>
+                <option value="">Selecione um tipo de aula...</option>
+                {tipoAulas.map((tipoAula) => (
+                    <option key={tipoAula.id} value={tipoAula.id}>
+                        {tipoAula.nome}
+                    </option>
+                ))}
             </Select>
 
             <Input

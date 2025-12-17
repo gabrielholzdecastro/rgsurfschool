@@ -1,9 +1,8 @@
 package br.com.julia.rgsurfschool.domain.repository;
 
-import br.com.julia.rgsurfschool.domain.model.Aula;
 import br.com.julia.rgsurfschool.domain.model.TipoAula;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AulaRepository extends JpaRepository<Aula, Long> {
-    boolean existsByTipoAula(TipoAula tipoAula);
+public interface TipoAulaRepository extends JpaRepository<TipoAula, Long> {
 }
+

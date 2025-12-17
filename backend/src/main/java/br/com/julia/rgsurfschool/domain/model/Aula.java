@@ -1,7 +1,6 @@
 package br.com.julia.rgsurfschool.domain.model;
 
 import br.com.julia.rgsurfschool.domain.enums.StatusPagamento;
-import br.com.julia.rgsurfschool.domain.enums.TipoAula;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,8 +33,8 @@ public class Aula {
     @Column(name = "hora_fim", nullable = false)
     private LocalTime horaFim;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "tipo_aula", nullable = false)
+    @ManyToOne
+    @JoinColumn(name = "tipo_aula_id", nullable = false)
     private TipoAula tipoAula;
 
     @Column(nullable = false)

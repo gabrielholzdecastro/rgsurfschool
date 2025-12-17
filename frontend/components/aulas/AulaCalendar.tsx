@@ -59,11 +59,10 @@ export function AulaCalendar({
       const startDateTime = new Date(`${dataStr}T${aula.horaInicio}`);
       const endDateTime = new Date(`${dataStr}T${aula.horaFim}`);
 
-      const tipoAulaLabel = aula.tipoAula === "KITE_SURF" ? "Kite Surf" : "Surfe";
       const statusLabel = aula.statusPagamento === "PAGO" ? "✓" : "⏳";
 
       return {
-        title: `${aula.nomeAluno} - ${tipoAulaLabel} ${statusLabel}`,
+        title: `${aula.nomeAluno} - ${aula.nomeTipoAula} ${statusLabel}`,
         start: startDateTime,
         end: endDateTime,
         resource: aula,
@@ -71,19 +70,18 @@ export function AulaCalendar({
     });
   }, [aulas]);
 
-  // Função para determinar a cor do evento baseado no tipo e status
+  // Função para determinar a cor do evento baseado no status
   const eventStyleGetter = (event: CalendarEvent) => {
     const aula = event.resource;
     let backgroundColor = "#3b82f6"; // azul padrão
     let borderColor = "#2563eb";
 
-    if (aula.tipoAula === "KITE_SURF") {
-      backgroundColor = aula.statusPagamento === "PAGO" ? "#10b981" : "#f59e0b"; // verde se pago, amarelo se pendente
-      borderColor = aula.statusPagamento === "PAGO" ? "#059669" : "#d97706";
+    if (aula.statusPagamento === "PAGO") {
+      backgroundColor = "#10b981"; // verde se pago
+      borderColor = "#059669";
     } else {
-      // SURF
-      backgroundColor = aula.statusPagamento === "PAGO" ? "#3b82f6" : "#ef4444"; // azul se pago, vermelho se pendente
-      borderColor = aula.statusPagamento === "PAGO" ? "#2563eb" : "#dc2626";
+      backgroundColor = "#f59e0b"; // amarelo se pendente
+      borderColor = "#d97706";
     }
 
     return {
@@ -228,7 +226,7 @@ export function AulaCalendar({
               <div>
                 <label className="text-sm font-medium text-gray-700">Tipo</label>
                 <p className="text-gray-900">
-                  {selectedEvent.resource.tipoAula === "KITE_SURF" ? "Kite Surf" : "Surfe"}
+                  {selectedEvent.resource.nomeTipoAula}
                 </p>
               </div>
               <div>

@@ -5,8 +5,10 @@ import br.com.julia.rgsurfschool.api.dto.AulaResponse;
 import br.com.julia.rgsurfschool.api.mapper.AulaMapper;
 import br.com.julia.rgsurfschool.domain.model.Aluno;
 import br.com.julia.rgsurfschool.domain.model.Aula;
+import br.com.julia.rgsurfschool.domain.model.TipoAula;
 import br.com.julia.rgsurfschool.domain.repository.AlunoRepository;
 import br.com.julia.rgsurfschool.domain.repository.AulaRepository;
+import br.com.julia.rgsurfschool.domain.repository.TipoAulaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,7 @@ public class AulaService {
 
     private final AulaRepository aulaRepository;
     private final AlunoRepository alunoRepository;
+    private final TipoAulaRepository tipoAulaRepository;
     private final AulaMapper aulaMapper;
 
     @Transactional
@@ -27,12 +30,15 @@ public class AulaService {
         Aluno aluno = alunoRepository.findById(request.getAlunoId())
                 .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
 
+        TipoAula tipoAula = tipoAulaRepository.findById(request.getTipoAulaId())
+                .orElseThrow(() -> new RuntimeException("Tipo de aula não encontrado"));
+
         Aula aula = Aula.builder()
                 .aluno(aluno)
                 .data(request.getData())
                 .horaInicio(request.getHoraInicio())
                 .horaFim(request.getHoraFim())
-                .tipoAula(request.getTipoAula())
+                .tipoAula(tipoAula)
                 .valor(request.getValor())
                 .statusPagamento(request.getStatusPagamento())
                 .build();
@@ -71,11 +77,14 @@ public class AulaService {
         Aluno aluno = alunoRepository.findById(request.getAlunoId())
                 .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
 
+        TipoAula tipoAula = tipoAulaRepository.findById(request.getTipoAulaId())
+                .orElseThrow(() -> new RuntimeException("Tipo de aula não encontrado"));
+
         aula.setAluno(aluno);
         aula.setData(request.getData());
         aula.setHoraInicio(request.getHoraInicio());
         aula.setHoraFim(request.getHoraFim());
-        aula.setTipoAula(request.getTipoAula());
+        aula.setTipoAula(tipoAula);
         aula.setValor(request.getValor());
         aula.setStatusPagamento(request.getStatusPagamento());
 

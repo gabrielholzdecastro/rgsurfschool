@@ -58,10 +58,9 @@ export function AulaList({
             render: (aula) => `${aula.horaInicio} - ${aula.horaFim}`,
         },
         {
-            key: "tipoAula",
+            key: "nomeTipoAula",
             label: "Tipo",
-            render: (aula) =>
-                aula.tipoAula === "KITE_SURF" ? "Kite Surf" : "Surfe",
+            render: (aula) => aula.nomeTipoAula,
         },
         {
             key: "valor",

@@ -1,7 +1,6 @@
 package br.com.julia.rgsurfschool.api.dto;
 
 import br.com.julia.rgsurfschool.domain.enums.StatusPagamento;
-import br.com.julia.rgsurfschool.domain.enums.TipoAula;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -16,7 +15,7 @@ public class AulaCreateRequest {
     private LocalDate data;
     private LocalTime horaInicio;
     private LocalTime horaFim;
-    private TipoAula tipoAula;
+    private Long tipoAulaId;
     private BigDecimal valor;
     private StatusPagamento statusPagamento;
 }
