@@ -5,7 +5,8 @@ import br.com.julia.rgsurfschool.domain.enums.Condicao;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public record LojaRequest(
+public record ProdutoResponse(
+        Long id,
         String nome,
         Integer qtdEstoque,
         Condicao condicao,

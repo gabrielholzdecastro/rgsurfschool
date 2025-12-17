@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { LojaForm } from "@/components/loja/LojaForm";
+import { ProdutoForm } from "@/components/produtos/ProdutoForm";
 
 export default function EditarProdutoPage() {
   const params = useParams();
@@ -11,7 +11,7 @@ export default function EditarProdutoPage() {
     <div className="space-y-6">
       <h1 className="text-3xl font-bold text-gray-900">Editar Produto</h1>
       <div className="max-w-2xl">
-        {id ? <LojaForm produtoId={id} /> : <p>Produto não encontrado</p>}
+        {id ? <ProdutoForm produtoId={id} /> : <p>Produto não encontrado</p>}
       </div>
     </div>
   );

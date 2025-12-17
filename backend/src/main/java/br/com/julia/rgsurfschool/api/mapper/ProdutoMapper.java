@@ -1,26 +1,26 @@
 package br.com.julia.rgsurfschool.api.mapper;
 
-import br.com.julia.rgsurfschool.api.dto.LojaRequest;
-import br.com.julia.rgsurfschool.api.dto.LojaResponse;
-import br.com.julia.rgsurfschool.domain.model.Loja;
+import br.com.julia.rgsurfschool.api.dto.ProdutoRequest;
+import br.com.julia.rgsurfschool.api.dto.ProdutoResponse;
+import br.com.julia.rgsurfschool.domain.model.Produto;
 
-public class LojaMapper {
+public class ProdutoMapper {
 
-    public static LojaResponse toResponse(Loja loja) {
-        return new LojaResponse(
-                loja.getId(),
-                loja.getNome(),
-                loja.getQtdEstoque(),
-                loja.getCondicao(),
-                loja.getPreco(),
-                loja.getCusto(),
-                loja.getDataAquisicao(),
-                loja.getFornecedor()
+    public static ProdutoResponse toResponse(Produto produto) {
+        return new ProdutoResponse(
+                produto.getId(),
+                produto.getNome(),
+                produto.getQtdEstoque(),
+                produto.getCondicao(),
+                produto.getPreco(),
+                produto.getCusto(),
+                produto.getDataAquisicao(),
+                produto.getFornecedor()
         );
     }
 
-    public static Loja toEntity(LojaRequest request) {
-        return Loja.builder()
+    public static Produto toEntity(ProdutoRequest request) {
+        return Produto.builder()
                 .nome(request.nome())
                 .qtdEstoque(request.qtdEstoque())
                 .condicao(request.condicao())
@@ -31,8 +31,8 @@ public class LojaMapper {
                 .build();
     }
 
-    public static Loja toEntity(LojaRequest request, Long id) {
-        return Loja.builder()
+    public static Produto toEntity(ProdutoRequest request, Long id) {
+        return Produto.builder()
                 .id(id)
                 .nome(request.nome())
                 .qtdEstoque(request.qtdEstoque())

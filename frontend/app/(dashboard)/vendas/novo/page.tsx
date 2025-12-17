@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useLoja } from "@/hooks/useLoja";
+import { useProduto } from "@/hooks/useProduto";
 import { useAlunos } from "@/hooks/useAlunos";
 import { vendaApi } from "@/lib/api/vendas";
 import { MetodoPagamento, StatusPagamento } from "@/types/venda";
@@ -12,7 +12,7 @@ import { Select } from "@/components/ui/Select";
 
 export default function NovaVendaPage() {
   const router = useRouter();
-  const { produtos, isLoading: loadingProdutos } = useLoja();
+  const { produtos, isLoading: loadingProdutos } = useProduto();
   const { alunos, isLoading: loadingAlunos } = useAlunos();
 
   const [produtoId, setProdutoId] = useState<string>("");

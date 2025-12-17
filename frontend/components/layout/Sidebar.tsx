@@ -24,8 +24,8 @@ const navigation: NavItem[] = [
     icon: <Calendar className="w-6 h-6" />,
   },
   {
-    name: "Loja",
-    href: "/loja",
+    name: "Produtos",
+    href: "/produtos",
     icon: <ShoppingBag className="w-6 h-6" />,
   },
   {

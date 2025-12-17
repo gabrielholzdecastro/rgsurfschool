@@ -21,8 +21,8 @@ public class Venda {
     Long id;
 
     @ManyToOne
-    @JoinColumn(name = "loja_id", nullable = false)
-    Loja produto;
+    @JoinColumn(name = "produto_id", nullable = false)
+    Produto produto;
 
     @ManyToOne
     @JoinColumn(name = "aluno_id")

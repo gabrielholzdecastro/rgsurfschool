@@ -1,25 +1,25 @@
 "use client";
 
-import { useState, FormEvent, useEffect } from "react";
+import { useState, FormEvent, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
-import { Condicao, LojaRequest } from "@/types/loja";
-import { createLoja, updateLoja, getLojas } from "@/lib/api/loja";
+import { Condicao, ProdutoRequest } from "@/types/produto";
+import { createProduto, updateProduto, getProdutos } from "@/lib/api/produto";
 
-interface LojaFormProps {
+interface ProdutoFormProps {
   produtoId?: number;
   onSuccess?: () => void;
 }
 
-export function LojaForm({ produtoId, onSuccess }: LojaFormProps) {
+export function ProdutoForm({ produtoId, onSuccess }: ProdutoFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(!!produtoId);
   const [error, setError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState<LojaRequest>({
+  const [formData, setFormData] = useState<ProdutoRequest>({
     nome: "",
     qtdEstoque: 0,
     condicao: Condicao.BOM,
@@ -29,15 +29,11 @@ export function LojaForm({ produtoId, onSuccess }: LojaFormProps) {
     fornecedor: "",
   });
 
-  useEffect(() => {
-    if (produtoId) {
-      loadProduto();
-    }
-  }, [produtoId]);
-
-  const loadProduto = async () => {
+  const loadProduto = useCallback(async () => {
+    if (!produtoId) return;
+    
     try {
-      const produtos = await getLojas();
+      const produtos = await getProdutos();
       const produto = produtos.find((p) => p.id === produtoId);
       if (produto) {
         setFormData({
@@ -57,7 +53,13 @@ export function LojaForm({ produtoId, onSuccess }: LojaFormProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [produtoId]);
+
+  useEffect(() => {
+    if (produtoId) {
+      loadProduto();
+    }
+  }, [produtoId, loadProduto]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,14 +68,14 @@ export function LojaForm({ produtoId, onSuccess }: LojaFormProps) {
 
     try {
       if (produtoId) {
-        await updateLoja(produtoId, formData);
+        await updateProduto(produtoId, formData);
       } else {
-        await createLoja(formData);
+        await createProduto(formData);
       }
       if (onSuccess) {
         onSuccess();
       } else {
-        router.push("/loja");
+        router.push("/produtos");
       }
     } catch (err) {
       setError(

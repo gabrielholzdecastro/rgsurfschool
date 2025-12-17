@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "RG Surf School - Dashboard",
-  description: "Sistema de gerenciamento de alunos e loja da RG Surf School",
+  description: "Sistema de gerenciamento de alunos e produtos da RG Surf School",
 };
 
 export default function RootLayout({

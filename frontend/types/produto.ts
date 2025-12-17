@@ -3,7 +3,7 @@ export enum Condicao {
   BOM = "BOM",
 }
 
-export interface LojaRequest {
+export interface ProdutoRequest {
   nome: string;
   qtdEstoque: number;
   condicao: Condicao;
@@ -13,7 +13,7 @@ export interface LojaRequest {
   fornecedor: string;
 }
 
-export interface LojaResponse {
+export interface ProdutoResponse {
   id: number;
   nome: string;
   qtdEstoque: number;

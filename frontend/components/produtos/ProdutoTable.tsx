@@ -3,37 +3,37 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DataTable, Column, TableAction } from "@/components/ui/DataTable";
-import { LojaResponse } from "@/types/loja";
+import { ProdutoResponse } from "@/types/produto";
 import { formatDate, formatCurrency } from "@/lib/utils";
-import { deleteLoja } from "@/lib/api/loja";
+import { deleteProduto } from "@/lib/api/produto";
 import { Edit, Trash2 } from "lucide-react";
 
-interface LojaTableProps {
-  produtos: LojaResponse[];
+interface ProdutoTableProps {
+  produtos: ProdutoResponse[];
   isLoading?: boolean;
   error?: string;
   onRetry?: () => void;
   onDelete?: () => void;
 }
 
-export function LojaTable({
+export function ProdutoTable({
   produtos,
   isLoading,
   error,
   onRetry,
   onDelete,
-}: LojaTableProps) {
+}: ProdutoTableProps) {
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
-  const handleDelete = async (produto: LojaResponse) => {
+  const handleDelete = async (produto: ProdutoResponse) => {
     if (!confirm("Tem certeza que deseja excluir este produto?")) {
       return;
     }
 
     setDeletingId(produto.id);
     try {
-      await deleteLoja(produto.id);
+      await deleteProduto(produto.id);
       if (onDelete) {
         onDelete();
       }
@@ -44,7 +44,7 @@ export function LojaTable({
     }
   };
 
-  const columns: Column<LojaResponse>[] = [
+  const columns: Column<ProdutoResponse>[] = [
     {
       key: "nome",
       label: "Nome",
@@ -79,11 +79,11 @@ export function LojaTable({
     },
   ];
 
-  const actions: TableAction<LojaResponse>[] = [
+  const actions: TableAction<ProdutoResponse>[] = [
     {
       label: "Alterar",
       icon: <Edit className="w-4 h-4" />,
-      onClick: (produto) => router.push(`/loja/${produto.id}`),
+      onClick: (produto) => router.push(`/produtos/${produto.id}`),
       variant: "secondary",
     },
     {

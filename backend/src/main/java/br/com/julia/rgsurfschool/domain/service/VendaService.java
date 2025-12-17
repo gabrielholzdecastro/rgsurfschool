@@ -5,10 +5,10 @@ import br.com.julia.rgsurfschool.api.dto.VendaResponse;
 import br.com.julia.rgsurfschool.api.mapper.VendaMapper;
 import br.com.julia.rgsurfschool.domain.enums.StatusPagamento;
 import br.com.julia.rgsurfschool.domain.model.Aluno;
-import br.com.julia.rgsurfschool.domain.model.Loja;
+import br.com.julia.rgsurfschool.domain.model.Produto;
 import br.com.julia.rgsurfschool.domain.model.Venda;
 import br.com.julia.rgsurfschool.domain.repository.AlunoRepository;
-import br.com.julia.rgsurfschool.domain.repository.LojaRepository;
+import br.com.julia.rgsurfschool.domain.repository.ProdutoRepository;
 import br.com.julia.rgsurfschool.domain.repository.VendaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,13 +24,13 @@ import java.util.stream.Collectors;
 public class VendaService {
 
     private final VendaRepository vendaRepository;
-    private final LojaRepository lojaRepository;
+    private final ProdutoRepository produtoRepository;
     private final AlunoRepository alunoRepository;
     private final VendaMapper vendaMapper;
 
     @Transactional
     public VendaResponse realizarVenda(VendaCreateRequest request) {
-        Loja produto = lojaRepository.findById(request.getProdutoId())
+        Produto produto = produtoRepository.findById(request.getProdutoId())
                 .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
 
         if (produto.getQtdEstoque() < request.getQuantidade()) {
@@ -55,7 +55,7 @@ public class VendaService {
 
         // Baixa de Estoque
         produto.setQtdEstoque(produto.getQtdEstoque() - request.getQuantidade());
-        lojaRepository.save(produto);
+        produtoRepository.save(produto);
 
         // Criação da Venda
         BigDecimal valorTotal = produto.getPreco().multiply(BigDecimal.valueOf(request.getQuantidade()));
