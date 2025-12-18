@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/vendas")
+@RequestMapping("/api/vendas")
 @CrossOrigin(origins = "http://localhost:3000")
 public class VendaController {
 
@@ -29,6 +29,18 @@ public class VendaController {
     @GetMapping
     public ResponseEntity<List<VendaResponse>> listarVendas() {
         return ResponseEntity.ok(vendaService.listarVendas());
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<VendaResponse> buscarPorId(@PathVariable Long id) {
+        VendaResponse venda = vendaService.buscarPorId(id);
+        return ResponseEntity.ok(venda);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<VendaResponse> atualizarVenda(@PathVariable Long id, @RequestBody VendaCreateRequest request) {
+        VendaResponse venda = vendaService.atualizarVenda(id, request);
+        return ResponseEntity.ok(venda);
     }
 
     @PutMapping("/{id}/quitar")

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { DataTable, Column, TableAction } from "@/components/ui/DataTable";
 import { TipoAulaResponse } from "@/types/tipoAula";
 import { formatCurrency } from "@/lib/utils";
@@ -14,6 +13,7 @@ interface TipoAulaTableProps {
     error?: string;
     onRetry?: () => void;
     onDelete?: () => void;
+    onEdit?: (id: number) => void;
 }
 
 export function TipoAulaTable({
@@ -22,8 +22,8 @@ export function TipoAulaTable({
     error,
     onRetry,
     onDelete,
+    onEdit,
 }: TipoAulaTableProps) {
-    const router = useRouter();
     const [deletingId, setDeletingId] = useState<number | null>(null);
 
     const handleDelete = async (tipoAula: TipoAulaResponse) => {
@@ -57,11 +57,17 @@ export function TipoAulaTable({
         },
     ];
 
+    const handleEdit = (tipoAula: TipoAulaResponse) => {
+        if (onEdit) {
+            onEdit(tipoAula.id);
+        }
+    };
+
     const actions: TableAction<TipoAulaResponse>[] = [
         {
             label: "Alterar",
             icon: <Edit className="w-4 h-4" />,
-            onClick: (tipoAula) => router.push(`/tipo-aulas/${tipoAula.id}`),
+            onClick: handleEdit,
             variant: "secondary",
         },
         {

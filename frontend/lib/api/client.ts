@@ -28,14 +28,24 @@ async function handleResponse<T>(response: Response): Promise<T> {
 }
 
 export async function apiGet<T>(endpoint: string): Promise<T> {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  });
+  try {
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
 
-  return handleResponse<T>(response);
+    return handleResponse<T>(response);
+  } catch (error) {
+    if (error instanceof TypeError && error.message === "Failed to fetch") {
+      throw new ApiError(
+        `Erro de conexão: Não foi possível conectar ao servidor em ${API_URL}. Verifique se o backend está rodando.`,
+        0
+      );
+    }
+    throw error;
+  }
 }
 
 export async function apiPost<T>(

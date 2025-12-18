@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { DataTable, Column, TableAction } from "@/components/ui/DataTable";
 import { ProfessorResponse } from "@/types/professor";
 import { deleteProfessor } from "@/lib/api/professor";
@@ -13,6 +12,7 @@ interface ProfessorTableProps {
   error?: string;
   onRetry?: () => void;
   onDelete?: () => void;
+  onEdit?: (id: number) => void;
 }
 
 export function ProfessorTable({
@@ -21,8 +21,8 @@ export function ProfessorTable({
   error,
   onRetry,
   onDelete,
+  onEdit,
 }: ProfessorTableProps) {
-  const router = useRouter();
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const handleDelete = async (professor: ProfessorResponse) => {
@@ -61,11 +61,17 @@ export function ProfessorTable({
     },
   ];
 
+  const handleEdit = (professor: ProfessorResponse) => {
+    if (onEdit) {
+      onEdit(professor.id);
+    }
+  };
+
   const actions: TableAction<ProfessorResponse>[] = [
     {
       label: "Alterar",
       icon: <Edit className="w-4 h-4" />,
-      onClick: (professor) => router.push(`/professores/${professor.id}`),
+      onClick: handleEdit,
       variant: "secondary",
     },
     {

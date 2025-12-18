@@ -16,8 +16,10 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class VendaResponse {
     private Long id;
+    private Long produtoId;
     private String nomeProduto;
     private String nomeComprador;
+    private Long alunoId;
     private Integer quantidade;
     private BigDecimal valorUnitario;
     private BigDecimal valorTotal;

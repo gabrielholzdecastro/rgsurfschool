@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { DataTable, Column, TableAction } from "@/components/ui/DataTable";
 import { AlunoFindAllResponse } from "@/types/aluno";
 import { formatDate } from "@/lib/utils";
@@ -12,6 +11,7 @@ interface AlunoListProps {
   error?: string;
   onRetry?: () => void;
   onDelete?: (id: number) => void;
+  onEdit?: (id: number) => void;
 }
 
 export function AlunoList({
@@ -20,8 +20,8 @@ export function AlunoList({
   error,
   onRetry,
   onDelete,
+  onEdit,
 }: AlunoListProps) {
-  const router = useRouter();
 
   const columns: Column<AlunoFindAllResponse>[] = [
     {
@@ -49,11 +49,19 @@ export function AlunoList({
     },
   ];
 
+  const handleEdit = (aluno: AlunoFindAllResponse) => {
+    if (onEdit) {
+      onEdit(aluno.id);
+    } else {
+      console.warn("onEdit não foi fornecido");
+    }
+  };
+
   const actions: TableAction<AlunoFindAllResponse>[] = [
     {
       label: "Alterar",
       icon: <Edit className="w-4 h-4" />,
-      onClick: (aluno) => router.push(`/alunos/${aluno.id}`),
+      onClick: handleEdit,
       variant: "secondary",
     },
     {

@@ -3,6 +3,7 @@ package br.com.julia.rgsurfschool.api.mapper;
 import br.com.julia.rgsurfschool.api.dto.AlunoCreateRequest;
 import br.com.julia.rgsurfschool.api.dto.AlunoCreateResponse;
 import br.com.julia.rgsurfschool.api.dto.AlunoFindAllResponse;
+import br.com.julia.rgsurfschool.api.dto.AlunoUpdateRequest;
 import br.com.julia.rgsurfschool.domain.model.Aluno;
 
 public class AlunoMapper {
@@ -25,6 +26,14 @@ public class AlunoMapper {
                 .nivelAluno(request.nivelAluno())
                 .dataInicio(request.dataInicio())
                 .build();
+    }
+
+    public static void updateEntity(Aluno aluno, AlunoUpdateRequest request) {
+        aluno.setNome(request.nome());
+        aluno.setEmail(request.email());
+        aluno.setTelefone(request.telefone());
+        aluno.setNivelAluno(request.nivelAluno());
+        aluno.setDataInicio(request.dataInicio());
     }
 
     public static AlunoCreateResponse toCreateResponse(Aluno aluno) {

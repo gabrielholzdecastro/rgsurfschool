@@ -12,17 +12,40 @@ import { filterBySearch } from "@/lib/utils";
 export default function VendasPage() {
   const { vendas, loading, error, recarregar, excluirVenda, quitarVenda } = useVendas();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingVendaId, setEditingVendaId] = useState<number | undefined>(undefined);
   const [searchTerm, setSearchTerm] = useState("");
 
   const filteredVendas = useMemo(() => {
     return filterBySearch(vendas, searchTerm, ["nomeProduto", "nomeComprador"]);
   }, [vendas, searchTerm]);
 
+  const handleNew = () => {
+    setEditingVendaId(undefined);
+    setIsModalOpen(true);
+  };
+
+  const handleEdit = (id: number) => {
+    setEditingVendaId(id);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingVendaId(undefined);
+  };
+
+  const handleSuccess = () => {
+    handleCloseModal();
+    recarregar();
+  };
+
+  const modalTitle = editingVendaId ? "Editar Venda" : "Nova Venda";
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold text-gray-900">Vendas</h1>
-        <Button onClick={() => setIsModalOpen(true)}>Nova Venda</Button>
+        <Button onClick={handleNew}>Nova Venda</Button>
       </div>
 
       <SearchBar
@@ -37,21 +60,20 @@ export default function VendasPage() {
         error={error || undefined}
         onRetry={recarregar}
         onDelete={excluirVenda}
-        quitarVenda={quitarVenda} 
+        quitarVenda={quitarVenda}
+        onEdit={handleEdit}
       />
 
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title="Nova Venda"
+        onClose={handleCloseModal}
+        title={modalTitle}
         size="xl"
       >
         <VendaForm
-          onSuccess={() => {
-            setIsModalOpen(false);
-            recarregar();
-          }}
-          onClose={() => setIsModalOpen(false)}
+          vendaId={editingVendaId}
+          onSuccess={handleSuccess}
+          onClose={handleCloseModal}
         />
       </Modal>
     </div>

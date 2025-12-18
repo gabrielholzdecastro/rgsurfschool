@@ -50,6 +50,15 @@ export function ProfessorForm({ professorId, onSuccess, onClose }: ProfessorForm
   useEffect(() => {
     if (professorId) {
       loadProfessor();
+    } else {
+      // Reset form quando não há professorId (modo criação)
+      setFormData({
+        nome: "",
+        email: null,
+        telefone: null,
+      });
+      setIsLoading(false);
+      setError(null);
     }
   }, [professorId, loadProfessor]);
 

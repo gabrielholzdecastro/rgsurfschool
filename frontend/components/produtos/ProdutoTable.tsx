@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { DataTable, Column, TableAction } from "@/components/ui/DataTable";
 import { ProdutoResponse } from "@/types/produto";
 import { formatDate, formatCurrency } from "@/lib/utils";
@@ -14,6 +13,7 @@ interface ProdutoTableProps {
   error?: string;
   onRetry?: () => void;
   onDelete?: () => void;
+  onEdit?: (id: number) => void;
 }
 
 export function ProdutoTable({
@@ -22,8 +22,8 @@ export function ProdutoTable({
   error,
   onRetry,
   onDelete,
+  onEdit,
 }: ProdutoTableProps) {
-  const router = useRouter();
   const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const handleDelete = async (produto: ProdutoResponse) => {
@@ -79,11 +79,17 @@ export function ProdutoTable({
     },
   ];
 
+  const handleEdit = (produto: ProdutoResponse) => {
+    if (onEdit) {
+      onEdit(produto.id);
+    }
+  };
+
   const actions: TableAction<ProdutoResponse>[] = [
     {
       label: "Alterar",
       icon: <Edit className="w-4 h-4" />,
-      onClick: (produto) => router.push(`/produtos/${produto.id}`),
+      onClick: handleEdit,
       variant: "secondary",
     },
     {

@@ -1,21 +1,23 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { NivelAluno, AlunoCreateRequest } from "@/types/aluno";
-import { createAluno } from "@/lib/api/alunos";
+import { createAluno, updateAluno, getAluno } from "@/lib/api/alunos";
 
 interface AlunoFormProps {
+  alunoId?: number;
   onSuccess?: () => void;
   onClose?: () => void;
 }
 
-export function AlunoForm({ onSuccess, onClose }: AlunoFormProps) {
+export function AlunoForm({ alunoId, onSuccess, onClose }: AlunoFormProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(!!alunoId);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<AlunoCreateRequest>({
@@ -26,13 +28,57 @@ export function AlunoForm({ onSuccess, onClose }: AlunoFormProps) {
     dataInicio: new Date().toISOString().split("T")[0],
   });
 
+  const loadAluno = useCallback(async () => {
+    if (!alunoId) return;
+
+    setIsLoading(true);
+    setError(null);
+    try {
+      const aluno = await getAluno(alunoId);
+      setFormData({
+        nome: aluno.nome,
+        email: aluno.email || "",
+        telefone: aluno.telefone,
+        nivelAluno: aluno.nivelAluno,
+        dataInicio: aluno.dataInicio || new Date().toISOString().split("T")[0],
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Erro ao carregar aluno";
+      setError(errorMessage);
+      console.error("Erro ao carregar aluno:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [alunoId]);
+
+  useEffect(() => {
+    if (alunoId) {
+      loadAluno();
+    } else {
+      // Reset form quando não há alunoId (modo criação)
+      setFormData({
+        nome: "",
+        email: "",
+        telefone: "",
+        nivelAluno: NivelAluno.INICIANTE,
+        dataInicio: new Date().toISOString().split("T")[0],
+      });
+      setIsLoading(false);
+      setError(null);
+    }
+  }, [alunoId, loadAluno]);
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
     try {
-      await createAluno(formData);
+      if (alunoId) {
+        await updateAluno(alunoId, formData);
+      } else {
+        await createAluno(formData);
+      }
       if (onClose) {
         onClose();
       }
@@ -43,12 +89,16 @@ export function AlunoForm({ onSuccess, onClose }: AlunoFormProps) {
       }
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "Erro ao criar aluno"
+        err instanceof Error ? err.message : "Erro ao salvar aluno"
       );
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoading) {
+    return <div className="text-center py-8">Carregando...</div>;
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

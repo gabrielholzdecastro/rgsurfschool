@@ -82,6 +82,76 @@ public class VendaService {
                 .map(vendaMapper::toResponse)
                 .collect(Collectors.toList());
     }
+
+    @Transactional(readOnly = true)
+    public VendaResponse buscarPorId(Long id) {
+        Venda venda = vendaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Venda não encontrada"));
+        return vendaMapper.toResponse(venda);
+    }
+
+    @Transactional
+    public VendaResponse atualizarVenda(Long id, VendaCreateRequest request) {
+        Venda venda = vendaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Venda não encontrada"));
+
+        Produto produtoNovo = produtoRepository.findById(request.getProdutoId())
+                .orElseThrow(() -> new RuntimeException("Produto não encontrado"));
+
+        Produto produtoAntigo = venda.getProduto();
+        int quantidadeAntiga = venda.getQuantidade();
+        int quantidadeNova = request.getQuantidade();
+
+        // Ajustar estoque: devolver quantidade antiga e subtrair nova
+        int diferencaEstoque = quantidadeAntiga - quantidadeNova;
+        int novoEstoque = produtoNovo.getQtdEstoque() + diferencaEstoque;
+
+        // Se mudou de produto, devolver estoque do produto antigo
+        if (!produtoAntigo.getId().equals(produtoNovo.getId())) {
+            produtoAntigo.setQtdEstoque(produtoAntigo.getQtdEstoque() + quantidadeAntiga);
+            produtoRepository.save(produtoAntigo);
+            novoEstoque = produtoNovo.getQtdEstoque() - quantidadeNova;
+        }
+
+        if (novoEstoque < 0) {
+            throw new RuntimeException("Estoque insuficiente. Estoque disponível: " + produtoNovo.getQtdEstoque());
+        }
+
+        // Se venda for fiado (PENDENTE), precisa ter identificação
+        if (request.getStatusPagamento() == StatusPagamento.PENDENTE) {
+            boolean temAluno = request.getAlunoId() != null;
+            boolean temNome = request.getNomeComprador() != null && !request.getNomeComprador().trim().isEmpty();
+            
+            if (!temAluno && !temNome) {
+                throw new RuntimeException("Para vendas 'Fiado' (Pendentes), é obrigatório identificar o comprador (Aluno ou Nome).");
+            }
+        }
+
+        Aluno aluno = null;
+        if (request.getAlunoId() != null) {
+            aluno = alunoRepository.findById(request.getAlunoId())
+                    .orElseThrow(() -> new RuntimeException("Aluno não encontrado"));
+        }
+
+        // Atualizar estoque do novo produto
+        produtoNovo.setQtdEstoque(novoEstoque);
+        produtoRepository.save(produtoNovo);
+
+        // Atualizar venda
+        BigDecimal valorTotal = produtoNovo.getPreco().multiply(BigDecimal.valueOf(quantidadeNova));
+
+        venda.setProduto(produtoNovo);
+        venda.setAluno(aluno);
+        venda.setNomeComprador(request.getNomeComprador());
+        venda.setQuantidade(quantidadeNova);
+        venda.setValorUnitario(produtoNovo.getPreco());
+        venda.setValorTotal(valorTotal);
+        venda.setMetodoPagamento(request.getMetodoPagamento());
+        venda.setStatusPagamento(request.getStatusPagamento());
+
+        Venda vendaAtualizada = vendaRepository.save(venda);
+        return vendaMapper.toResponse(vendaAtualizada);
+    }
     
     @Transactional
     public void quitarVenda(Long id) {

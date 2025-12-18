@@ -43,6 +43,14 @@ export function TipoAulaForm({ tipoAulaId, onSuccess, onClose }: TipoAulaFormPro
     useEffect(() => {
         if (tipoAulaId) {
             loadTipoAula();
+        } else {
+            // Reset form quando não há tipoAulaId (modo criação)
+            setFormData({
+                nome: "",
+                valorPadrao: 0,
+            });
+            setIsLoading(false);
+            setError(null);
         }
     }, [tipoAulaId, loadTipoAula]);
 

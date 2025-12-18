@@ -34,6 +34,32 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
         statusPagamento: initialData?.statusPagamento || "PENDENTE",
     });
 
+    // Reset form quando initialData mudar
+    useEffect(() => {
+        if (!initialData) {
+            setFormData({
+                alunoId: 0,
+                data: new Date().toISOString().split("T")[0],
+                horaInicio: "",
+                horaFim: "",
+                tipoAulaId: 0,
+                valor: 0,
+                statusPagamento: "PENDENTE",
+            });
+            setError(null);
+        } else {
+            setFormData({
+                alunoId: initialData.alunoId,
+                data: initialData.data,
+                horaInicio: initialData.horaInicio,
+                horaFim: initialData.horaFim,
+                tipoAulaId: initialData.tipoAulaId,
+                valor: initialData.valor,
+                statusPagamento: initialData.statusPagamento,
+            });
+        }
+    }, [initialData]);
+
     // Auto-fill Hora Fim logic (1h duration)
     useEffect(() => {
         if (formData.horaInicio && !initialData?.horaFim) { // Only auto-fill if not editing an existing horaFim

@@ -21,8 +21,10 @@ export interface VendaCreateRequest {
 
 export interface VendaResponse {
     id: number;
+    produtoId: number;
     nomeProduto: string;
     nomeComprador: string;
+    alunoId?: number | null;
     quantidade: number;
     valorUnitario: number;
     valorTotal: number;

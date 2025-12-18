@@ -136,10 +136,15 @@ export function DataTable<T extends Record<string, any>>({
                           return (
                             <Button
                               key={actionIndex}
+                              type="button"
                               variant={action.variant || "secondary"}
                               className={cn("p-1.5", action.className)}
                               title={action.label}
-                              onClick={() => action.onClick(item)}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                action.onClick(item);
+                              }}
                               disabled={isDisabled}
                             >
                               {action.icon}

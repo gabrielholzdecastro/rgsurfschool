@@ -4,7 +4,6 @@ import { useState, useMemo } from "react";
 import { Calendar, dateFnsLocalizer, View, Event } from "react-big-calendar";
 import { format, parse, startOfWeek, getDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { useRouter } from "next/navigation";
 import { AulaResponse } from "@/types/aula";
 import { formatDate, formatCurrency } from "@/lib/utils";
 import { Edit, Trash2, CheckCircle } from "lucide-react";
@@ -35,6 +34,7 @@ interface AulaCalendarProps {
   onRetry?: () => void;
   onDelete?: (id: number) => void;
   onPay?: (id: number) => void;
+  onEdit?: (id: number) => void;
 }
 
 export function AulaCalendar({
@@ -44,8 +44,8 @@ export function AulaCalendar({
   onRetry,
   onDelete,
   onPay,
+  onEdit,
 }: AulaCalendarProps) {
-  const router = useRouter();
   const [view, setView] = useState<View>("month");
   const [date, setDate] = useState(new Date());
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
@@ -103,9 +103,10 @@ export function AulaCalendar({
   };
 
   const handleEdit = () => {
-    if (selectedEvent) {
-      router.push(`/aulas/${selectedEvent.resource.id}`);
+    if (selectedEvent && onEdit) {
+      onEdit(selectedEvent.resource.id);
       setIsModalOpen(false);
+      setSelectedEvent(null);
     }
   };
 

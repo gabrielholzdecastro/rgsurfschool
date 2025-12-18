@@ -1,6 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { DataTable, Column, TableAction } from "@/components/ui/DataTable";
 import { VendaResponse, StatusPagamento } from "@/types/venda";
 import { formatDate, formatCurrency } from "@/lib/utils";
@@ -13,6 +12,7 @@ interface VendaListProps {
     onRetry?: () => void;
     onDelete?: (id: number) => Promise<void>;
     quitarVenda: (id: number) => Promise<void>;
+    onEdit?: (id: number) => void;
 }
 
 export function VendaList({ 
@@ -21,9 +21,9 @@ export function VendaList({
     error, 
     onRetry,
     onDelete,
-    quitarVenda 
+    quitarVenda,
+    onEdit
 }: VendaListProps) {
-    const router = useRouter();
 
     const handleDelete = async (venda: VendaResponse) => {
         if (!confirm("Tem certeza que deseja excluir esta venda?")) {
@@ -91,11 +91,17 @@ export function VendaList({
         },
     ];
 
+    const handleEdit = (venda: VendaResponse) => {
+        if (onEdit) {
+            onEdit(venda.id);
+        }
+    };
+
     const actions: TableAction<VendaResponse>[] = [
         {
             label: "Alterar",
             icon: <Edit className="w-4 h-4" />,
-            onClick: (venda) => router.push(`/vendas/${venda.id}`),
+            onClick: handleEdit,
             variant: "secondary",
         },
         {

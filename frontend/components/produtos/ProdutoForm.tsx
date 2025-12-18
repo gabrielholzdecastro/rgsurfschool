@@ -59,6 +59,19 @@ export function ProdutoForm({ produtoId, onSuccess, onClose }: ProdutoFormProps)
   useEffect(() => {
     if (produtoId) {
       loadProduto();
+    } else {
+      // Reset form quando não há produtoId (modo criação)
+      setFormData({
+        nome: "",
+        qtdEstoque: 0,
+        condicao: Condicao.BOM,
+        preco: 0,
+        custo: 0,
+        dataAquisicao: new Date().toISOString().split("T")[0],
+        fornecedor: "",
+      });
+      setIsLoading(false);
+      setError(null);
     }
   }, [produtoId, loadProduto]);
 

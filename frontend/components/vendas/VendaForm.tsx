@@ -1,19 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useProduto } from "@/hooks/useProduto";
 import { useAlunos } from "@/hooks/useAlunos";
 import { vendaApi } from "@/lib/api/vendas";
-import { MetodoPagamento, StatusPagamento } from "@/types/venda";
+import { MetodoPagamento, StatusPagamento, VendaResponse } from "@/types/venda";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 
 interface VendaFormProps {
+  vendaId?: number;
   onSuccess?: () => void;
   onClose?: () => void;
 }
 
-export function VendaForm({ onSuccess, onClose }: VendaFormProps) {
+export function VendaForm({ vendaId, onSuccess, onClose }: VendaFormProps) {
   const { produtos, isLoading: loadingProdutos } = useProduto();
   const { alunos, isLoading: loadingAlunos } = useAlunos();
 
@@ -25,7 +26,64 @@ export function VendaForm({ onSuccess, onClose }: VendaFormProps) {
   const [metodoPagamento, setMetodoPagamento] = useState<MetodoPagamento>(MetodoPagamento.PIX);
   const [isPago, setIsPago] = useState<boolean>(true);
   const [loading, setLoading] = useState(false);
+  const [isLoadingVenda, setIsLoadingVenda] = useState(!!vendaId);
   const [erro, setErro] = useState<string | null>(null);
+
+  const loadVenda = useCallback(async () => {
+    if (!vendaId) return;
+
+    setIsLoadingVenda(true);
+    setErro(null);
+    try {
+      console.log("Buscando venda com ID:", vendaId);
+      const venda = await vendaApi.buscarVenda(vendaId);
+      console.log("Venda carregada:", venda);
+      
+      // Usar produtoId diretamente
+      if (venda.produtoId) {
+        setProdutoId(venda.produtoId.toString());
+      }
+      setQuantidade(venda.quantidade);
+      
+      // Determinar modo comprador baseado no alunoId
+      if (venda.alunoId) {
+        setModoComprador("aluno");
+        setAlunoId(venda.alunoId.toString());
+      } else {
+        setModoComprador("avulso");
+        setNomeComprador(venda.nomeComprador || "");
+      }
+      
+      setMetodoPagamento(venda.metodoPagamento);
+      setIsPago(venda.statusPagamento === StatusPagamento.PAGO);
+    } catch (err) {
+      console.error("Erro detalhado ao carregar venda:", err);
+      const errorMessage = err instanceof Error ? err.message : "Erro ao carregar venda";
+      setErro(`Erro ao carregar venda: ${errorMessage}. Verifique se o backend está rodando.`);
+    } finally {
+      setIsLoadingVenda(false);
+    }
+  }, [vendaId]);
+
+  useEffect(() => {
+    if (vendaId) {
+      // Aguardar produtos e alunos carregarem antes de buscar venda
+      if (!loadingProdutos && !loadingAlunos && produtos.length > 0) {
+        loadVenda();
+      }
+    } else {
+      // Reset form quando não há vendaId (modo criação)
+      setProdutoId("");
+      setQuantidade(1);
+      setModoComprador("avulso");
+      setAlunoId("");
+      setNomeComprador("");
+      setMetodoPagamento(MetodoPagamento.PIX);
+      setIsPago(true);
+      setErro(null);
+      setIsLoadingVenda(false);
+    }
+  }, [vendaId, loadingProdutos, loadingAlunos, produtos.length, loadVenda]);
 
   const produtoSelecionado = produtos.find((p) => p.id === Number(produtoId));
   const precoUnitario = produtoSelecionado?.preco || 0;
@@ -63,14 +121,21 @@ export function VendaForm({ onSuccess, onClose }: VendaFormProps) {
     }
 
     try {
-      await vendaApi.realizarVenda({
+      const vendaData = {
         produtoId: Number(produtoId),
         quantidade,
         alunoId: modoComprador === "aluno" && alunoId ? Number(alunoId) : null,
         nomeComprador: modoComprador === "avulso" ? nomeComprador : undefined,
         metodoPagamento,
         statusPagamento: isPago ? StatusPagamento.PAGO : StatusPagamento.PENDENTE,
-      });
+      };
+
+      if (vendaId) {
+        await vendaApi.atualizarVenda(vendaId, vendaData);
+      } else {
+        await vendaApi.realizarVenda(vendaData);
+      }
+
       if (onClose) {
         onClose();
       }
@@ -79,13 +144,13 @@ export function VendaForm({ onSuccess, onClose }: VendaFormProps) {
       }
     } catch (err: any) {
       console.error(err);
-      setErro("Erro ao realizar venda. Verifique os dados.");
+      setErro(vendaId ? "Erro ao atualizar venda. Verifique os dados." : "Erro ao realizar venda. Verifique os dados.");
     } finally {
       setLoading(false);
     }
   };
 
-  if (loadingProdutos || loadingAlunos) {
+  if (loadingProdutos || loadingAlunos || isLoadingVenda) {
     return <div className="p-8">Carregando dados...</div>;
   }
 
