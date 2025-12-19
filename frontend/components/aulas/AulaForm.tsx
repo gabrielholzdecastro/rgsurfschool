@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect, useRef, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -23,6 +23,8 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
     const { tipoAulas } = useTipoAulas();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const isInitialMount = useRef(true);
+    const lastTipoAulaId = useRef<number>(0);
 
     const [formData, setFormData] = useState<AulaCreateRequest>({
         alunoId: initialData?.alunoId || 0,
@@ -47,6 +49,7 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
                 statusPagamento: "PENDENTE",
             });
             setError(null);
+            lastTipoAulaId.current = 0;
         } else {
             setFormData({
                 alunoId: initialData.alunoId,
@@ -57,7 +60,9 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
                 valor: initialData.valor,
                 statusPagamento: initialData.statusPagamento,
             });
+            lastTipoAulaId.current = initialData.tipoAulaId;
         }
+        isInitialMount.current = false;
     }, [initialData]);
 
     // Auto-fill Hora Fim logic (1h duration)
@@ -75,6 +80,23 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
             setFormData((prev) => ({ ...prev, horaFim: `${newHours}:${newMinutes}` }));
         }
     }, [formData.horaInicio, initialData?.horaFim]);
+
+    // Auto-fill Valor when Tipo de Aula is selected
+    useEffect(() => {
+        // Skip on initial mount to avoid overwriting initialData
+        if (isInitialMount.current) {
+            return;
+        }
+
+        // Only auto-fill when tipoAulaId changes and is valid
+        if (formData.tipoAulaId > 0 && tipoAulas.length > 0 && formData.tipoAulaId !== lastTipoAulaId.current) {
+            const tipoAulaSelecionado = tipoAulas.find((tipo) => tipo.id === formData.tipoAulaId);
+            if (tipoAulaSelecionado && tipoAulaSelecionado.valorPadrao) {
+                setFormData((prev) => ({ ...prev, valor: tipoAulaSelecionado.valorPadrao }));
+                lastTipoAulaId.current = formData.tipoAulaId;
+            }
+        }
+    }, [formData.tipoAulaId, tipoAulas]);
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
