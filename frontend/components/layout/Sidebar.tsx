@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { Waves, Users, ShoppingBag, DollarSign, Calendar, GraduationCap, BookOpen } from "lucide-react";
+import { Waves, Users, ShoppingBag, DollarSign, Calendar, GraduationCap, BookOpen, LayoutDashboard } from "lucide-react";
 
 interface NavItem {
   name: string;
@@ -13,6 +13,11 @@ interface NavItem {
 }
 
 const navigation: NavItem[] = [
+  {
+    name: "Dashboard",
+    href: "/",
+    icon: <LayoutDashboard className="w-6 h-6" />,
+  },
   {
     name: "Alunos",
     href: "/alunos",
@@ -24,14 +29,14 @@ const navigation: NavItem[] = [
     icon: <GraduationCap className="w-6 h-6" />,
   },
   {
+    name: "Serviços",
+    href: "/tipo-aulas",
+    icon: <BookOpen className="w-6 h-6" />,
+  },
+  {
     name: "Aulas",
     href: "/aulas",
     icon: <Calendar className="w-6 h-6" />,
-  },
-  {
-    name: "Tipos de Aula",
-    href: "/tipo-aulas",
-    icon: <BookOpen className="w-6 h-6" />,
   },
   {
     name: "Produtos",
@@ -77,7 +82,7 @@ export function Sidebar() {
         {/* Menu Items */}
         <div className="space-y-2">
           {navigation.map((item) => {
-            const isActive = pathname.startsWith(item.href);
+            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
             return (
               <Link
                 key={item.name}

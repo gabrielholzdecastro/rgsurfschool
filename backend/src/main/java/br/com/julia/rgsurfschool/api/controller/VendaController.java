@@ -48,4 +48,10 @@ public class VendaController {
         vendaService.quitarVenda(id);
         return ResponseEntity.noContent().build();
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluirVenda(@PathVariable Long id) {
+        vendaService.excluirVenda(id);
+        return ResponseEntity.noContent().build();
+    }
 }

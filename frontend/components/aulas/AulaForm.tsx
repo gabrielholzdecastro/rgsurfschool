@@ -184,12 +184,12 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
             </div>
 
             <Select
-                label="Tipo de Aula *"
+                label="Serviço *"
                 required
                 value={formData.tipoAulaId > 0 ? formData.tipoAulaId.toString() : ""}
                 onChange={(e) => setFormData({ ...formData, tipoAulaId: Number(e.target.value) })}
             >
-                <option value="">Selecione um tipo de aula...</option>
+                <option value="">Selecione um serviço...</option>
                 {tipoAulas.map((tipoAula) => (
                     <option key={tipoAula.id} value={tipoAula.id}>
                         {tipoAula.nome}

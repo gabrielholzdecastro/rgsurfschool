@@ -166,4 +166,18 @@ public class VendaService {
         venda.setStatusPagamento(status);
         vendaRepository.save(venda);
     }
+
+    @Transactional
+    public void excluirVenda(Long id) {
+        Venda venda = vendaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Venda não encontrada"));
+
+        // Devolver estoque ao produto
+        Produto produto = venda.getProduto();
+        produto.setQtdEstoque(produto.getQtdEstoque() + venda.getQuantidade());
+        produtoRepository.save(produto);
+
+        // Excluir venda
+        vendaRepository.deleteById(id);
+    }
 }
