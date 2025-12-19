@@ -69,9 +69,7 @@ export function AlunoList({
       icon: <Trash2 className="w-4 h-4" />,
       onClick: (aluno) => {
         if (onDelete) {
-          if (confirm("Tem certeza que deseja excluir este aluno?")) {
-            onDelete(aluno.id);
-          }
+          onDelete(aluno.id);
         }
       },
       variant: "danger",

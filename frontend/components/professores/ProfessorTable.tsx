@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from "react";
 import { DataTable, Column, TableAction } from "@/components/ui/DataTable";
 import { ProfessorResponse } from "@/types/professor";
-import { deleteProfessor } from "@/lib/api/professor";
 import { Edit, Trash2 } from "lucide-react";
 
 interface ProfessorTableProps {
@@ -11,7 +9,7 @@ interface ProfessorTableProps {
   isLoading?: boolean;
   error?: string;
   onRetry?: () => void;
-  onDelete?: () => void;
+  onDelete?: (id: number) => void;
   onEdit?: (id: number) => void;
 }
 
@@ -23,23 +21,9 @@ export function ProfessorTable({
   onDelete,
   onEdit,
 }: ProfessorTableProps) {
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-
-  const handleDelete = async (professor: ProfessorResponse) => {
-    if (!confirm("Tem certeza que deseja excluir este professor?")) {
-      return;
-    }
-
-    setDeletingId(professor.id);
-    try {
-      await deleteProfessor(professor.id);
-      if (onDelete) {
-        onDelete();
-      }
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao excluir professor");
-    } finally {
-      setDeletingId(null);
+  const handleDelete = (professor: ProfessorResponse) => {
+    if (onDelete) {
+      onDelete(professor.id);
     }
   };
 
@@ -79,7 +63,6 @@ export function ProfessorTable({
       icon: <Trash2 className="w-4 h-4" />,
       onClick: handleDelete,
       variant: "danger",
-      disabled: (professor) => deletingId === professor.id,
       className: "text-white",
     },
   ];

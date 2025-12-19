@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { DataTable, Column, TableAction } from "@/components/ui/DataTable";
 import { ProdutoResponse } from "@/types/produto";
 import { formatDate, formatCurrency } from "@/lib/utils";
-import { deleteProduto } from "@/lib/api/produto";
 import { Edit, Trash2 } from "lucide-react";
 
 interface ProdutoTableProps {
@@ -12,7 +10,7 @@ interface ProdutoTableProps {
   isLoading?: boolean;
   error?: string;
   onRetry?: () => void;
-  onDelete?: () => void;
+  onDelete?: (id: number) => void;
   onEdit?: (id: number) => void;
 }
 
@@ -24,23 +22,9 @@ export function ProdutoTable({
   onDelete,
   onEdit,
 }: ProdutoTableProps) {
-  const [deletingId, setDeletingId] = useState<number | null>(null);
-
-  const handleDelete = async (produto: ProdutoResponse) => {
-    if (!confirm("Tem certeza que deseja excluir este produto?")) {
-      return;
-    }
-
-    setDeletingId(produto.id);
-    try {
-      await deleteProduto(produto.id);
-      if (onDelete) {
-        onDelete();
-      }
-    } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao excluir produto");
-    } finally {
-      setDeletingId(null);
+  const handleDelete = (produto: ProdutoResponse) => {
+    if (onDelete) {
+      onDelete(produto.id);
     }
   };
 
@@ -97,7 +81,6 @@ export function ProdutoTable({
       icon: <Trash2 className="w-4 h-4" />,
       onClick: handleDelete,
       variant: "danger",
-      disabled: (produto) => deletingId === produto.id,
       className: "text-white",
     },
   ];

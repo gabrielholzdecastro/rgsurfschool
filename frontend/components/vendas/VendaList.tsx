@@ -10,7 +10,7 @@ interface VendaListProps {
     isLoading?: boolean;
     error?: string;
     onRetry?: () => void;
-    onDelete?: (id: number) => Promise<void>;
+    onDelete?: (id: number) => void;
     quitarVenda: (id: number) => Promise<void>;
     onEdit?: (id: number) => void;
 }
@@ -25,17 +25,9 @@ export function VendaList({
     onEdit
 }: VendaListProps) {
 
-    const handleDelete = async (venda: VendaResponse) => {
-        if (!confirm("Tem certeza que deseja excluir esta venda?")) {
-            return;
-        }
-
+    const handleDelete = (venda: VendaResponse) => {
         if (onDelete) {
-            try {
-                await onDelete(venda.id);
-            } catch (err) {
-                alert(err instanceof Error ? err.message : "Erro ao excluir venda");
-            }
+            onDelete(venda.id);
         }
     };
 

@@ -1,10 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { DataTable, Column, TableAction } from "@/components/ui/DataTable";
 import { TipoAulaResponse } from "@/types/tipoAula";
 import { formatCurrency } from "@/lib/utils";
-import { deleteTipoAula } from "@/lib/api/tipoAula";
 import { Edit, Trash2 } from "lucide-react";
 
 interface TipoAulaTableProps {
@@ -12,7 +10,7 @@ interface TipoAulaTableProps {
     isLoading?: boolean;
     error?: string;
     onRetry?: () => void;
-    onDelete?: () => void;
+    onDelete?: (id: number) => void;
     onEdit?: (id: number) => void;
 }
 
@@ -24,23 +22,9 @@ export function TipoAulaTable({
     onDelete,
     onEdit,
 }: TipoAulaTableProps) {
-    const [deletingId, setDeletingId] = useState<number | null>(null);
-
-    const handleDelete = async (tipoAula: TipoAulaResponse) => {
-        if (!confirm("Tem certeza que deseja excluir este tipo de aula?")) {
-            return;
-        }
-
-        setDeletingId(tipoAula.id);
-        try {
-            await deleteTipoAula(tipoAula.id);
-            if (onDelete) {
-                onDelete();
-            }
-        } catch (err) {
-            alert(err instanceof Error ? err.message : "Erro ao excluir tipo de aula");
-        } finally {
-            setDeletingId(null);
+    const handleDelete = (tipoAula: TipoAulaResponse) => {
+        if (onDelete) {
+            onDelete(tipoAula.id);
         }
     };
 
@@ -75,7 +59,6 @@ export function TipoAulaTable({
             icon: <Trash2 className="w-4 h-4" />,
             onClick: handleDelete,
             variant: "danger",
-            disabled: (tipoAula) => deletingId === tipoAula.id,
             className: "text-white",
         },
     ];

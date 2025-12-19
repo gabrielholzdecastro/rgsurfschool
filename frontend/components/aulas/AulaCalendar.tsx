@@ -112,11 +112,9 @@ export function AulaCalendar({
 
   const handleDelete = () => {
     if (selectedEvent && onDelete) {
-      if (confirm("Tem certeza que deseja excluir esta aula?")) {
-        onDelete(selectedEvent.resource.id);
-        setIsModalOpen(false);
-        setSelectedEvent(null);
-      }
+      onDelete(selectedEvent.resource.id);
+      setIsModalOpen(false);
+      setSelectedEvent(null);
     }
   };
 
