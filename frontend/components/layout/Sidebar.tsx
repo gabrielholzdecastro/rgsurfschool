@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
-import { Waves, Users, ShoppingBag, DollarSign, Calendar, GraduationCap, BookOpen, LayoutDashboard } from "lucide-react";
+import { Waves, Users, ShoppingBag, DollarSign, Calendar, GraduationCap, BookOpen, LayoutDashboard, Shield } from "lucide-react";
 
 interface NavItem {
   name: string;
@@ -47,6 +47,11 @@ const navigation: NavItem[] = [
     name: "Vendas",
     href: "/vendas",
     icon: <DollarSign className="w-6 h-6" />,
+  },
+  {
+    name: "Guarderia",
+    href: "/guarderia",
+    icon: <Shield className="w-6 h-6" />,
   },
 ];
 
@@ -105,4 +110,3 @@ export function Sidebar() {
     </aside>
   );
 }
-
