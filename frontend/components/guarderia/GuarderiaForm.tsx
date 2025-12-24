@@ -1,15 +1,19 @@
 "use client";
 
-import { useState, FormEvent, useEffect, useCallback } from "react";
+import { useState, FormEvent, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { TipoGuarderiaTable } from "@/components/tipoGuarderia/TipoGuarderiaTable";
+import { TipoGuarderiaForm } from "@/components/tipoGuarderia/TipoGuarderiaForm";
 import { GuarderiaCreateRequest, GuarderiaUpdateRequest } from "@/types/guarderia";
 import { createGuarderia, updateGuarderia, getGuarderia } from "@/lib/api/guarderia";
 import { useAlunos } from "@/hooks/useAlunos";
 import { useTipoGuarderia } from "@/hooks/useTipoGuarderia";
-import { TempoGuarderia } from "@/types/tipoGuarderia";
+import { TempoGuarderia, TipoGuarderiaResponse } from "@/types/tipoGuarderia";
+import { Settings } from "lucide-react";
 
 interface GuarderiaFormProps {
   guarderiaId?: number;
@@ -57,14 +61,32 @@ function calcularDataVencimento(dataInicio: string, tipo: TempoGuarderia): strin
   return novaData.toISOString().split("T")[0];
 }
 
+function ordenarTiposGuarderia(tipoGuarderias: TipoGuarderiaResponse[]): TipoGuarderiaResponse[] {
+  const ordem: Record<TempoGuarderia, number> = {
+    [TempoGuarderia.DIARIA]: 1,
+    [TempoGuarderia.MENSAL]: 2,
+    [TempoGuarderia.TRIMESTRAL]: 3,
+    [TempoGuarderia.ANUAL]: 4,
+  };
+  
+  return [...tipoGuarderias].sort((a, b) => {
+    const ordemA = ordem[a.tipo] ?? 999;
+    const ordemB = ordem[b.tipo] ?? 999;
+    return ordemA - ordemB;
+  });
+}
+
 export function GuarderiaForm({ guarderiaId, onSuccess, onClose }: GuarderiaFormProps) {
   const router = useRouter();
   const { alunos, isLoading: loadingAlunos } = useAlunos();
-  const { tipoGuarderias, isLoading: loadingTipos } = useTipoGuarderia();
+  const { tipoGuarderias, isLoading: loadingTipos, refetch: refetchTipos } = useTipoGuarderia();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(!!guarderiaId);
   const [error, setError] = useState<string | null>(null);
+  const [isTiposModalOpen, setIsTiposModalOpen] = useState(false);
+  const [isEditTipoModalOpen, setIsEditTipoModalOpen] = useState(false);
+  const [editingTipoGuarderiaId, setEditingTipoGuarderiaId] = useState<number | undefined>(undefined);
 
   const [alunoId, setAlunoId] = useState<string>("");
   const [tipoGuarderiaId, setTipoGuarderiaId] = useState<string>("");
@@ -74,6 +96,7 @@ export function GuarderiaForm({ guarderiaId, onSuccess, onClose }: GuarderiaForm
   const [dataFim, setDataFim] = useState<string>("");
   const [dataVencimento, setDataVencimento] = useState<string>("");
 
+  const tipoGuarderiasOrdenadas = useMemo(() => ordenarTiposGuarderia(tipoGuarderias), [tipoGuarderias]);
   const tipoSelecionado = tipoGuarderias.find((t) => t.id === Number(tipoGuarderiaId));
 
   // Calcular datas quando tipo ou data início mudarem
@@ -87,7 +110,8 @@ export function GuarderiaForm({ guarderiaId, onSuccess, onClose }: GuarderiaForm
 
   // Preencher valor quando tipo for selecionado
   useEffect(() => {
-    if (tipoSelecionado && !valor) {
+    if (tipoSelecionado) {
+      // Atualiza o valor sempre que o tipo selecionado mudar (incluindo após edição)
       setValor(tipoSelecionado.valorPadrao.toString());
     }
   }, [tipoSelecionado]);
@@ -178,7 +202,8 @@ export function GuarderiaForm({ guarderiaId, onSuccess, onClose }: GuarderiaForm
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <>
+      <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-800">{error}</p>
@@ -199,28 +224,44 @@ export function GuarderiaForm({ guarderiaId, onSuccess, onClose }: GuarderiaForm
         ))}
       </Select>
 
-      <Select
-        label="Tipo de Guarderia *"
-        required
-        value={tipoGuarderiaId}
-        onChange={(e) => {
-          setTipoGuarderiaId(e.target.value);
-          const tipo = tipoGuarderias.find((t) => t.id === Number(e.target.value));
-          if (tipo) {
-            setValor(tipo.valorPadrao.toString());
-          }
-        }}
-      >
-        <option value="">Selecione um tipo...</option>
-        {tipoGuarderias.map((tipo) => (
-          <option key={tipo.id} value={tipo.id}>
-            {tipo.tipo === TempoGuarderia.DIARIA && "Diária"}
-            {tipo.tipo === TempoGuarderia.MENSAL && "Mensal"}
-            {tipo.tipo === TempoGuarderia.TRIMESTRAL && "Trimestral"}
-            {tipo.tipo === TempoGuarderia.ANUAL && "Anual"}
-          </option>
-        ))}
-      </Select>
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Plano de Guarderia *
+        </label>
+        <div className="flex gap-2">
+          <Select
+            required
+            value={tipoGuarderiaId}
+            onChange={(e) => {
+              setTipoGuarderiaId(e.target.value);
+              const tipo = tipoGuarderias.find((t) => t.id === Number(e.target.value));
+              if (tipo) {
+                setValor(tipo.valorPadrao.toString());
+              }
+            }}
+            className="flex-1"
+          >
+            <option value="">Selecione um plano...</option>
+            {tipoGuarderiasOrdenadas.map((tipo) => (
+              <option key={tipo.id} value={tipo.id}>
+                {tipo.tipo === TempoGuarderia.DIARIA && "Diária"}
+                {tipo.tipo === TempoGuarderia.MENSAL && "Mensal"}
+                {tipo.tipo === TempoGuarderia.TRIMESTRAL && "Trimestral"}
+                {tipo.tipo === TempoGuarderia.ANUAL && "Anual"}
+              </option>
+            ))}
+          </Select>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setIsTiposModalOpen(true)}
+            className="px-2 py-1 h-[37px] flex items-center justify-center"
+            title="Gerenciar planos de guarderia"
+          >
+            <Settings className="w-5 h-5" />
+          </Button>
+        </div>
+      </div>
 
       <Input
         label="Valor *"
@@ -283,7 +324,53 @@ export function GuarderiaForm({ guarderiaId, onSuccess, onClose }: GuarderiaForm
           Salvar
         </Button>
       </div>
-    </form>
+      </form>
+
+      {/* Modal de Gerenciamento de Planos de Guarderia */}
+      <Modal
+        isOpen={isTiposModalOpen}
+        onClose={() => setIsTiposModalOpen(false)}
+        title="Gerenciar Planos de Guarderia"
+        size="lg"
+      >
+        <TipoGuarderiaTable
+          tipoGuarderias={tipoGuarderias}
+          isLoading={loadingTipos}
+          error={undefined}
+          onRetry={refetchTipos}
+          onEdit={(id) => {
+            setEditingTipoGuarderiaId(id);
+            setIsEditTipoModalOpen(true);
+          }}
+        />
+      </Modal>
+
+      {/* Modal de Edição de Plano de Guarderia */}
+      {editingTipoGuarderiaId && (
+        <Modal
+          isOpen={isEditTipoModalOpen}
+          onClose={() => {
+            setIsEditTipoModalOpen(false);
+            setEditingTipoGuarderiaId(undefined);
+          }}
+          title="Alterar Valor"
+          size="lg"
+        >
+          <TipoGuarderiaForm
+            tipoGuarderiaId={editingTipoGuarderiaId}
+            onSuccess={() => {
+              setIsEditTipoModalOpen(false);
+              setEditingTipoGuarderiaId(undefined);
+              refetchTipos();
+            }}
+            onClose={() => {
+              setIsEditTipoModalOpen(false);
+              setEditingTipoGuarderiaId(undefined);
+            }}
+          />
+        </Modal>
+      )}
+    </>
   );
 }
 

@@ -23,6 +23,21 @@ function formatTipoGuarderia(tipo: TempoGuarderia): string {
     return tipoMap[tipo] || tipo;
 }
 
+function ordenarTiposGuarderia(tipoGuarderias: TipoGuarderiaResponse[]): TipoGuarderiaResponse[] {
+    const ordem: Record<TempoGuarderia, number> = {
+        [TempoGuarderia.DIARIA]: 1,
+        [TempoGuarderia.MENSAL]: 2,
+        [TempoGuarderia.TRIMESTRAL]: 3,
+        [TempoGuarderia.ANUAL]: 4,
+    };
+    
+    return [...tipoGuarderias].sort((a, b) => {
+        const ordemA = ordem[a.tipo] ?? 999;
+        const ordemB = ordem[b.tipo] ?? 999;
+        return ordemA - ordemB;
+    });
+}
+
 export function TipoGuarderiaTable({
     tipoGuarderias,
     isLoading,
@@ -35,6 +50,8 @@ export function TipoGuarderiaTable({
             onEdit(tipoGuarderia.id);
         }
     };
+
+    const tipoGuarderiasOrdenadas = ordenarTiposGuarderia(tipoGuarderias);
 
     const columns: Column<TipoGuarderiaResponse>[] = [
         {
@@ -61,7 +78,7 @@ export function TipoGuarderiaTable({
 
     return (
         <DataTable
-            data={tipoGuarderias}
+            data={tipoGuarderiasOrdenadas}
             columns={columns}
             isLoading={isLoading}
             error={error}
