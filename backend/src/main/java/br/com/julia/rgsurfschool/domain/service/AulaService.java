@@ -5,9 +5,11 @@ import br.com.julia.rgsurfschool.api.dto.AulaResponse;
 import br.com.julia.rgsurfschool.api.mapper.AulaMapper;
 import br.com.julia.rgsurfschool.domain.model.Aluno;
 import br.com.julia.rgsurfschool.domain.model.Aula;
+import br.com.julia.rgsurfschool.domain.model.Professor;
 import br.com.julia.rgsurfschool.domain.model.TipoAula;
 import br.com.julia.rgsurfschool.domain.repository.AlunoRepository;
 import br.com.julia.rgsurfschool.domain.repository.AulaRepository;
+import br.com.julia.rgsurfschool.domain.repository.ProfessorRepository;
 import br.com.julia.rgsurfschool.domain.repository.TipoAulaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +25,7 @@ public class AulaService {
     private final AulaRepository aulaRepository;
     private final AlunoRepository alunoRepository;
     private final TipoAulaRepository tipoAulaRepository;
+    private final ProfessorRepository professorRepository;
     private final AulaMapper aulaMapper;
 
     @Transactional
@@ -33,12 +36,19 @@ public class AulaService {
         TipoAula tipoAula = tipoAulaRepository.findById(request.getTipoAulaId())
                 .orElseThrow(() -> new RuntimeException("Tipo de aula não encontrado"));
 
+        Professor professor = null;
+        if (request.getProfessorId() != null) {
+            professor = professorRepository.findById(request.getProfessorId())
+                    .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
+        }
+
         Aula aula = Aula.builder()
                 .aluno(aluno)
                 .data(request.getData())
                 .horaInicio(request.getHoraInicio())
                 .horaFim(request.getHoraFim())
                 .tipoAula(tipoAula)
+                .professor(professor)
                 .valor(request.getValor())
                 .statusPagamento(request.getStatusPagamento())
                 .build();
@@ -80,11 +90,18 @@ public class AulaService {
         TipoAula tipoAula = tipoAulaRepository.findById(request.getTipoAulaId())
                 .orElseThrow(() -> new RuntimeException("Tipo de aula não encontrado"));
 
+        Professor professor = null;
+        if (request.getProfessorId() != null) {
+            professor = professorRepository.findById(request.getProfessorId())
+                    .orElseThrow(() -> new RuntimeException("Professor não encontrado"));
+        }
+
         aula.setAluno(aluno);
         aula.setData(request.getData());
         aula.setHoraInicio(request.getHoraInicio());
         aula.setHoraFim(request.getHoraFim());
         aula.setTipoAula(tipoAula);
+        aula.setProfessor(professor);
         aula.setValor(request.getValor());
         aula.setStatusPagamento(request.getStatusPagamento());
 

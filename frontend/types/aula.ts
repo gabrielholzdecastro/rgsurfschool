@@ -6,6 +6,7 @@ export interface AulaCreateRequest {
     horaInicio: string; // HH:mm
     horaFim: string; // HH:mm
     tipoAulaId: number;
+    professorId?: number;
     valor: number;
     statusPagamento: StatusPagamento;
 }
@@ -19,6 +20,8 @@ export interface AulaResponse {
     horaFim: string;
     tipoAulaId: number;
     nomeTipoAula: string;
+    professorId?: number;
+    nomeProfessor?: string;
     valor: number;
     statusPagamento: StatusPagamento;
 }

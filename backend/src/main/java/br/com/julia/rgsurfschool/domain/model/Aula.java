@@ -37,6 +37,10 @@ public class Aula {
     @JoinColumn(name = "tipo_aula_id", nullable = false)
     private TipoAula tipoAula;
 
+    @ManyToOne
+    @JoinColumn(name = "professor_id", nullable = true)
+    private Professor professor;
+
     @Column(nullable = false)
     private BigDecimal valor;
 

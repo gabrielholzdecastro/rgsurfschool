@@ -229,6 +229,12 @@ export function AulaCalendar({
                 </p>
               </div>
               <div>
+                <label className="text-sm font-medium text-gray-700">Professor</label>
+                <p className="text-gray-900">
+                  {selectedEvent.resource.nomeProfessor || "-"}
+                </p>
+              </div>
+              <div>
                 <label className="text-sm font-medium text-gray-700">Valor</label>
                 <p className="text-gray-900">{formatCurrency(selectedEvent.resource.valor)}</p>
               </div>

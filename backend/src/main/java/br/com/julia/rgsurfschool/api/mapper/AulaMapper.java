@@ -17,6 +17,8 @@ public class AulaMapper {
                 aula.getHoraFim(),
                 aula.getTipoAula().getId(),
                 aula.getTipoAula().getNome(),
+                aula.getProfessor() != null ? aula.getProfessor().getId() : null,
+                aula.getProfessor() != null ? aula.getProfessor().getNome() : null,
                 aula.getValor(),
                 aula.getStatusPagamento());
     }

@@ -11,6 +11,7 @@ import { AulaCreateRequest, StatusPagamento } from "@/types/aula";
 import { createAula, updateAula } from "@/lib/api/aula";
 import { useAlunos } from "@/hooks/useAlunos";
 import { useTipoAulas } from "@/hooks/useTipoAulas";
+import { useProfessores } from "@/hooks/useProfessores";
 import { TipoAulaTable } from "@/components/tipoAulas/TipoAulaTable";
 import { TipoAulaForm } from "@/components/tipoAulas/TipoAulaForm";
 import { deleteTipoAula } from "@/lib/api/tipoAula";
@@ -27,6 +28,7 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
     const router = useRouter();
     const { alunos } = useAlunos();
     const { tipoAulas, isLoading: loadingServicos, refetch: refetchServicos } = useTipoAulas();
+    const { professores } = useProfessores();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const isInitialMount = useRef(true);
@@ -45,6 +47,7 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
         horaInicio: initialData?.horaInicio || "",
         horaFim: initialData?.horaFim || "",
         tipoAulaId: initialData?.tipoAulaId || 0,
+        professorId: initialData?.professorId,
         valor: initialData?.valor || 0,
         statusPagamento: initialData?.statusPagamento || "PENDENTE",
     });
@@ -58,6 +61,7 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
                 horaInicio: "",
                 horaFim: "",
                 tipoAulaId: 0,
+                professorId: undefined,
                 valor: 0,
                 statusPagamento: "PENDENTE",
             });
@@ -70,6 +74,7 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
                 horaInicio: initialData.horaInicio,
                 horaFim: initialData.horaFim,
                 tipoAulaId: initialData.tipoAulaId,
+                professorId: initialData.professorId,
                 valor: initialData.valor,
                 statusPagamento: initialData.statusPagamento,
             });
@@ -170,6 +175,19 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
                     // Assuming AlunoFindAllResponse has id, if not we might need to adjust useAlunos or AlunoResponse
                     <option key={aluno.id} value={aluno.id}>
                         {aluno.nome}
+                    </option>
+                ))}
+            </Select>
+
+            <Select
+                label="Professor"
+                value={formData.professorId ? formData.professorId.toString() : ""}
+                onChange={(e) => setFormData({ ...formData, professorId: e.target.value ? Number(e.target.value) : undefined })}
+            >
+                <option value="">Selecione um professor...</option>
+                {professores.map((professor) => (
+                    <option key={professor.id} value={professor.id}>
+                        {professor.nome}
                     </option>
                 ))}
             </Select>

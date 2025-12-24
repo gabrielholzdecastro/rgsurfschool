@@ -63,6 +63,11 @@ export function AulaList({
             render: (aula) => aula.nomeTipoAula,
         },
         {
+            key: "nomeProfessor",
+            label: "Professor",
+            render: (aula) => aula.nomeProfessor || "-",
+        },
+        {
             key: "valor",
             label: "Valor",
             render: (aula) => formatCurrency(aula.valor),

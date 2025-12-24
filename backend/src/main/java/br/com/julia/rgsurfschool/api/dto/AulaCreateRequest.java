@@ -16,6 +16,7 @@ public class AulaCreateRequest {
     private LocalTime horaInicio;
     private LocalTime horaFim;
     private Long tipoAulaId;
+    private Long professorId;
     private BigDecimal valor;
     private StatusPagamento statusPagamento;
 }

@@ -16,6 +16,8 @@ public record AulaResponse(
         @JsonFormat(pattern = "HH:mm") LocalTime horaFim,
         Long tipoAulaId,
         String nomeTipoAula,
+        Long professorId,
+        String nomeProfessor,
         BigDecimal valor,
         StatusPagamento statusPagamento) {
 }
