@@ -6,10 +6,16 @@ import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { TimeSelect } from "@/components/ui/TimeSelect";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import { AulaCreateRequest, StatusPagamento } from "@/types/aula";
 import { createAula, updateAula } from "@/lib/api/aula";
 import { useAlunos } from "@/hooks/useAlunos";
 import { useTipoAulas } from "@/hooks/useTipoAulas";
+import { TipoAulaTable } from "@/components/tipoAulas/TipoAulaTable";
+import { TipoAulaForm } from "@/components/tipoAulas/TipoAulaForm";
+import { deleteTipoAula } from "@/lib/api/tipoAula";
+import { ApiError } from "@/lib/api/client";
+import { Settings } from "lucide-react";
 
 interface AulaFormProps {
     initialData?: AulaCreateRequest & { id?: number };
@@ -20,11 +26,18 @@ interface AulaFormProps {
 export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
     const router = useRouter();
     const { alunos } = useAlunos();
-    const { tipoAulas } = useTipoAulas();
+    const { tipoAulas, isLoading: loadingServicos, refetch: refetchServicos } = useTipoAulas();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const isInitialMount = useRef(true);
     const lastTipoAulaId = useRef<number>(0);
+    const [isServicosModalOpen, setIsServicosModalOpen] = useState(false);
+    const [isEditServicoModalOpen, setIsEditServicoModalOpen] = useState(false);
+    const [editingServicoId, setEditingServicoId] = useState<number | undefined>(undefined);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [servicoToDelete, setServicoToDelete] = useState<number | null>(null);
+    const [isErrorModalOpen, setIsErrorModalOpen] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string>("");
 
     const [formData, setFormData] = useState<AulaCreateRequest>({
         alunoId: initialData?.alunoId || 0,
@@ -138,6 +151,7 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
     };
 
     return (
+        <>
         <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -183,19 +197,35 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
                 />
             </div>
 
-            <Select
-                label="Serviço *"
-                required
-                value={formData.tipoAulaId > 0 ? formData.tipoAulaId.toString() : ""}
-                onChange={(e) => setFormData({ ...formData, tipoAulaId: Number(e.target.value) })}
-            >
-                <option value="">Selecione um serviço...</option>
-                {tipoAulas.map((tipoAula) => (
-                    <option key={tipoAula.id} value={tipoAula.id}>
-                        {tipoAula.nome}
-                    </option>
-                ))}
-            </Select>
+            <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Serviço *
+                </label>
+                <div className="flex gap-2">
+                    <Select
+                        required
+                        value={formData.tipoAulaId > 0 ? formData.tipoAulaId.toString() : ""}
+                        onChange={(e) => setFormData({ ...formData, tipoAulaId: Number(e.target.value) })}
+                        className="flex-1"
+                    >
+                        <option value="">Selecione um serviço...</option>
+                        {tipoAulas.map((tipoAula) => (
+                            <option key={tipoAula.id} value={tipoAula.id}>
+                                {tipoAula.nome}
+                            </option>
+                        ))}
+                    </Select>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setIsServicosModalOpen(true)}
+                        className="px-2 py-1 h-[37px] flex items-center justify-center"
+                        title="Gerenciar serviços"
+                    >
+                        <Settings className="w-5 h-5" />
+                    </Button>
+                </div>
+            </div>
 
             <Input
                 label="Valor (R$) *"
@@ -235,5 +265,143 @@ export function AulaForm({ initialData, onSuccess, onClose }: AulaFormProps) {
                 </Button>
             </div>
         </form>
+
+        {/* Modal de Gerenciamento de Serviços */}
+        <Modal
+            isOpen={isServicosModalOpen}
+            onClose={() => setIsServicosModalOpen(false)}
+            title="Gerenciar Serviços"
+            size="lg"
+        >
+            <div className="space-y-4">
+                <div className="flex justify-end">
+                    <Button onClick={() => {
+                        setEditingServicoId(undefined);
+                        setIsEditServicoModalOpen(true);
+                    }}>
+                        Novo Serviço
+                    </Button>
+                </div>
+                <TipoAulaTable
+                    tipoAulas={tipoAulas}
+                    isLoading={loadingServicos}
+                    error={undefined}
+                    onRetry={refetchServicos}
+                    onEdit={(id) => {
+                        setEditingServicoId(id);
+                        setIsEditServicoModalOpen(true);
+                    }}
+                    onDelete={(id) => {
+                        setServicoToDelete(id);
+                        setIsDeleteModalOpen(true);
+                    }}
+                />
+            </div>
+        </Modal>
+
+        {/* Modal de Edição/Criação de Serviço */}
+        <Modal
+            isOpen={isEditServicoModalOpen}
+            onClose={() => {
+                setIsEditServicoModalOpen(false);
+                setEditingServicoId(undefined);
+            }}
+            title={editingServicoId ? "Editar Serviço" : "Novo Serviço"}
+            size="lg"
+        >
+            <TipoAulaForm
+                tipoAulaId={editingServicoId}
+                onSuccess={() => {
+                    setIsEditServicoModalOpen(false);
+                    setEditingServicoId(undefined);
+                    refetchServicos();
+                }}
+                onClose={() => {
+                    setIsEditServicoModalOpen(false);
+                    setEditingServicoId(undefined);
+                }}
+            />
+        </Modal>
+
+        {/* Modal de Confirmação de Exclusão */}
+        <Modal
+            isOpen={isDeleteModalOpen}
+            onClose={() => {
+                setIsDeleteModalOpen(false);
+                setServicoToDelete(null);
+            }}
+            title="Confirmar Exclusão"
+            size="sm"
+        >
+            <div className="space-y-4">
+                <p className="text-gray-700">
+                    Tem certeza que deseja excluir este serviço? Esta ação não pode ser desfeita.
+                </p>
+                <div className="flex justify-end gap-3">
+                    <Button
+                        variant="outline"
+                        onClick={() => {
+                            setIsDeleteModalOpen(false);
+                            setServicoToDelete(null);
+                        }}
+                    >
+                        Cancelar
+                    </Button>
+                    <Button
+                        variant="danger"
+                        onClick={async () => {
+                            if (servicoToDelete === null) return;
+                            
+                            try {
+                                await deleteTipoAula(servicoToDelete);
+                                setIsDeleteModalOpen(false);
+                                setServicoToDelete(null);
+                                refetchServicos();
+                            } catch (e) {
+                                setIsDeleteModalOpen(false);
+                                if (e instanceof ApiError && e.status === 409) {
+                                    setErrorMessage(e.message || "Não é possível excluir este serviço pois ele está relacionado a aulas.");
+                                } else {
+                                    setErrorMessage("Erro ao excluir serviço. Tente novamente.");
+                                }
+                                setIsErrorModalOpen(true);
+                                setServicoToDelete(null);
+                            }
+                        }}
+                    >
+                        Excluir
+                    </Button>
+                </div>
+            </div>
+        </Modal>
+
+        {/* Modal de Erro */}
+        <Modal
+            isOpen={isErrorModalOpen}
+            onClose={() => {
+                setIsErrorModalOpen(false);
+                setErrorMessage("");
+            }}
+            title="Erro ao Excluir Serviço"
+            size="sm"
+        >
+            <div className="space-y-4">
+                <p className="text-gray-700">
+                    {errorMessage}
+                </p>
+                <div className="flex justify-end">
+                    <Button
+                        variant="primary"
+                        onClick={() => {
+                            setIsErrorModalOpen(false);
+                            setErrorMessage("");
+                        }}
+                    >
+                        OK
+                    </Button>
+                </div>
+            </div>
+        </Modal>
+    </>
     );
 }
