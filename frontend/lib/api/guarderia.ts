@@ -21,3 +21,7 @@ export async function deleteGuarderia(id: number): Promise<void> {
     return apiDelete(`/api/guarderia/${id}`);
 }
 
+export async function quitarGuarderia(id: number): Promise<GuarderiaResponse> {
+    return updateGuarderia(id, { pago: true });
+}
+

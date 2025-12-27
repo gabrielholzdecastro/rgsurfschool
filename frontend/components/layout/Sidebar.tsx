@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
-import { Waves, Users, ShoppingBag, DollarSign, Calendar, GraduationCap, LayoutDashboard, Shield, Store, ChevronDown, ChevronRight } from "lucide-react";
+import { Waves, Users, ShoppingBag, DollarSign, Calendar, GraduationCap, LayoutDashboard, Shield, Store, ChevronDown, ChevronRight, TrendingUp } from "lucide-react";
 
 interface NavSubItem {
   name: string;
@@ -60,6 +60,11 @@ const navigation: NavItem[] = [
     name: "Guarderia",
     href: "/guarderia",
     icon: <Shield className="w-6 h-6" />,
+  },
+  {
+    name: "Financeiro",
+    href: "/financeiro",
+    icon: <TrendingUp className="w-6 h-6" />,
   },
 ];
 
