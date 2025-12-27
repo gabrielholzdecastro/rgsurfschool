@@ -3,13 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
-import { Waves, Users, ShoppingBag, DollarSign, Calendar, GraduationCap, LayoutDashboard, Shield } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Waves, Users, ShoppingBag, DollarSign, Calendar, GraduationCap, LayoutDashboard, Shield, Store, ChevronDown, ChevronRight } from "lucide-react";
 
-interface NavItem {
+interface NavSubItem {
   name: string;
   href: string;
   icon: React.ReactNode;
+}
+
+interface NavItem {
+  name: string;
+  href?: string;
+  icon: React.ReactNode;
+  subItems?: NavSubItem[];
 }
 
 const navigation: NavItem[] = [
@@ -34,14 +41,20 @@ const navigation: NavItem[] = [
     icon: <Calendar className="w-6 h-6" />,
   },
   {
-    name: "Produtos",
-    href: "/produtos",
-    icon: <ShoppingBag className="w-6 h-6" />,
-  },
-  {
-    name: "Vendas",
-    href: "/vendas",
-    icon: <DollarSign className="w-6 h-6" />,
+    name: "Loja",
+    icon: <Store className="w-6 h-6" />,
+    subItems: [
+      {
+        name: "Produtos",
+        href: "/produtos",
+        icon: <ShoppingBag className="w-5 h-5" />,
+      },
+      {
+        name: "Vendas",
+        href: "/vendas",
+        icon: <DollarSign className="w-5 h-5" />,
+      },
+    ],
   },
   {
     name: "Guarderia",
@@ -53,6 +66,36 @@ const navigation: NavItem[] = [
 export function Sidebar() {
   const pathname = usePathname();
   const [isHovered, setIsHovered] = useState(false);
+  const [expandedMenus, setExpandedMenus] = useState<Set<string>>(new Set());
+
+  // Auto-expandir submenu se algum subitem estiver ativo
+  useEffect(() => {
+    const activeMenus = new Set<string>();
+    navigation.forEach((item) => {
+      if (item.subItems) {
+        const hasActiveSubItem = item.subItems.some((subItem) => {
+          return pathname.startsWith(subItem.href);
+        });
+        if (hasActiveSubItem) {
+          activeMenus.add(item.name);
+        }
+      }
+    });
+    setExpandedMenus(activeMenus);
+  }, [pathname]);
+
+  // Expandir/colapsar submenu
+  const toggleSubmenu = (menuName: string) => {
+    setExpandedMenus((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(menuName)) {
+        newSet.delete(menuName);
+      } else {
+        newSet.add(menuName);
+      }
+      return newSet;
+    });
+  };
 
   return (
     <aside
@@ -82,11 +125,74 @@ export function Sidebar() {
         {/* Menu Items */}
         <div className="space-y-2">
           {navigation.map((item) => {
-            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            const hasSubItems = item.subItems && item.subItems.length > 0;
+            const isExpanded = expandedMenus.has(item.name);
+            
+            if (hasSubItems) {
+              // Verificar se algum subitem está ativo
+              const hasActiveSubItem = item.subItems!.some((subItem) => {
+                return pathname.startsWith(subItem.href);
+              });
+
+              return (
+                <div key={item.name}>
+                  {/* Botão do menu principal com subitens */}
+                  <button
+                    onClick={() => toggleSubmenu(item.name)}
+                    className={cn(
+                      "w-full flex items-center rounded-lg text-sm font-medium transition-colors",
+                      isHovered ? "gap-3 px-4 py-3" : "justify-center px-2 py-3",
+                      hasActiveSubItem
+                        ? "bg-blue-600 text-white"
+                        : "text-gray-700 hover:bg-gray-100"
+                    )}
+                  >
+                    <span className="flex-shrink-0">{item.icon}</span>
+                    {isHovered && (
+                      <>
+                        <span className="flex-1 text-left">{item.name}</span>
+                        {isExpanded ? (
+                          <ChevronDown className="w-4 h-4 flex-shrink-0" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 flex-shrink-0" />
+                        )}
+                      </>
+                    )}
+                  </button>
+
+                  {/* Subitens */}
+                  {isHovered && isExpanded && (
+                    <div className="ml-4 mt-1 space-y-1">
+                      {item.subItems!.map((subItem) => {
+                        const isSubActive = pathname.startsWith(subItem.href);
+                        return (
+                          <Link
+                            key={subItem.name}
+                            href={subItem.href}
+                            className={cn(
+                              "flex items-center gap-3 rounded-lg px-4 py-2 text-sm font-medium transition-colors",
+                              isSubActive
+                                ? "bg-blue-600 text-white"
+                                : "text-gray-700 hover:bg-gray-100"
+                            )}
+                          >
+                            <span className="flex-shrink-0">{subItem.icon}</span>
+                            <span>{subItem.name}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
+            // Item de menu normal (sem subitens)
+            const isActive = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href!);
             return (
               <Link
                 key={item.name}
-                href={item.href}
+                href={item.href!}
                 className={cn(
                   "flex items-center rounded-lg text-sm font-medium transition-colors",
                   isHovered ? "gap-3 px-4 py-3" : "justify-center px-2 py-3",
