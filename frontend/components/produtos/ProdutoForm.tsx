@@ -3,9 +3,8 @@
 import { useState, FormEvent, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
-import { Condicao, ProdutoRequest } from "@/types/produto";
+import { ProdutoRequest } from "@/types/produto";
 import { createProduto, updateProduto, getProdutos } from "@/lib/api/produto";
 
 interface ProdutoFormProps {
@@ -23,11 +22,7 @@ export function ProdutoForm({ produtoId, onSuccess, onClose }: ProdutoFormProps)
   const [formData, setFormData] = useState<ProdutoRequest>({
     nome: "",
     qtdEstoque: 0,
-    condicao: Condicao.BOM,
     preco: 0,
-    custo: 0,
-    dataAquisicao: new Date().toISOString().split("T")[0],
-    fornecedor: "",
   });
 
   const loadProduto = useCallback(async () => {
@@ -40,7 +35,6 @@ export function ProdutoForm({ produtoId, onSuccess, onClose }: ProdutoFormProps)
         setFormData({
           nome: produto.nome,
           qtdEstoque: produto.qtdEstoque,
-          condicao: produto.condicao,
           preco: produto.preco,
           custo: produto.custo,
           dataAquisicao: produto.dataAquisicao,
@@ -64,11 +58,7 @@ export function ProdutoForm({ produtoId, onSuccess, onClose }: ProdutoFormProps)
       setFormData({
         nome: "",
         qtdEstoque: 0,
-        condicao: Condicao.BOM,
         preco: 0,
-        custo: 0,
-        dataAquisicao: new Date().toISOString().split("T")[0],
-        fornecedor: "",
       });
       setIsLoading(false);
       setError(null);
@@ -136,21 +126,6 @@ export function ProdutoForm({ produtoId, onSuccess, onClose }: ProdutoFormProps)
         }
       />
 
-      <Select
-        label="Condição *"
-        required
-        value={formData.condicao}
-        onChange={(e) =>
-          setFormData({
-            ...formData,
-            condicao: e.target.value as Condicao,
-          })
-        }
-      >
-        <option value={Condicao.EXCELENTE}>Excelente</option>
-        <option value={Condicao.BOM}>Bom</option>
-      </Select>
-
       <Input
         label="Preço *"
         type="number"
@@ -164,34 +139,31 @@ export function ProdutoForm({ produtoId, onSuccess, onClose }: ProdutoFormProps)
       />
 
       <Input
-        label="Custo *"
+        label="Custo"
         type="number"
-        required
         min="0"
         step="0.01"
-        value={formData.custo}
+        value={formData.custo || ""}
         onChange={(e) =>
-          setFormData({ ...formData, custo: parseFloat(e.target.value) || 0 })
+          setFormData({ ...formData, custo: e.target.value ? parseFloat(e.target.value) : undefined })
         }
       />
 
       <Input
-        label="Data de Aquisição *"
+        label="Data de Aquisição"
         type="date"
-        required
-        value={formData.dataAquisicao}
+        value={formData.dataAquisicao || ""}
         onChange={(e) =>
-          setFormData({ ...formData, dataAquisicao: e.target.value })
+          setFormData({ ...formData, dataAquisicao: e.target.value || undefined })
         }
       />
 
       <Input
-        label="Fornecedor *"
+        label="Fornecedor"
         type="text"
-        required
-        value={formData.fornecedor}
+        value={formData.fornecedor || ""}
         onChange={(e) =>
-          setFormData({ ...formData, fornecedor: e.target.value })
+          setFormData({ ...formData, fornecedor: e.target.value || undefined })
         }
       />
 

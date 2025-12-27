@@ -1,0 +1,5 @@
+ALTER TABLE tb_produto DROP COLUMN IF EXISTS condicao;
+ALTER TABLE tb_produto ALTER COLUMN custo DROP NOT NULL;
+ALTER TABLE tb_produto ALTER COLUMN data_aquisicao DROP NOT NULL;
+ALTER TABLE tb_produto ALTER COLUMN fornecedor DROP NOT NULL;
+

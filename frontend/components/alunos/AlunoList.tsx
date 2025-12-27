@@ -2,7 +2,6 @@
 
 import { DataTable, Column, TableAction } from "@/components/ui/DataTable";
 import { AlunoFindAllResponse } from "@/types/aluno";
-import { formatDate } from "@/lib/utils";
 import { Edit, Trash2 } from "lucide-react";
 
 interface AlunoListProps {
@@ -36,16 +35,6 @@ export function AlunoList({
     {
       key: "email",
       label: "Email",
-    },
-    {
-      key: "nivelAluno",
-      label: "Nível",
-    },
-    {
-      key: "dataInicio",
-      label: "Data Início",
-      render: (aluno) =>
-        aluno.dataInicio ? formatDate(aluno.dataInicio) : "-",
     },
   ];
 

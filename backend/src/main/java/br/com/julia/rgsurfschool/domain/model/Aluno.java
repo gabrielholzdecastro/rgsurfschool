@@ -1,10 +1,7 @@
 package br.com.julia.rgsurfschool.domain.model;
 
-import br.com.julia.rgsurfschool.domain.enums.NivelAluno;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDate;
 
 @Entity(name = "tb_aluno")
 @AllArgsConstructor
@@ -23,14 +20,7 @@ public class Aluno {
 
     String email;
 
-    @Column(nullable = false, length = 30)
+    @Column(length = 30)
     String telefone;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "nivel_aluno")
-    NivelAluno nivelAluno;
-
-    @Column(name = "data_inicio")
-    LocalDate dataInicio;
 
 }

@@ -1,0 +1,2 @@
+ALTER TABLE tb_aluno ALTER COLUMN telefone DROP NOT NULL;
+

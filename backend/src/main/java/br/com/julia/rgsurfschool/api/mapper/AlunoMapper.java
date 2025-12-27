@@ -13,9 +13,7 @@ public class AlunoMapper {
                 aluno.getId(),
                 aluno.getNome(),
                 aluno.getEmail(),
-                aluno.getTelefone(),
-                aluno.getNivelAluno(),
-                aluno.getDataInicio());
+                aluno.getTelefone());
     }
 
     public static Aluno toEntity(AlunoCreateRequest request) {
@@ -23,8 +21,6 @@ public class AlunoMapper {
                 .nome(request.nome())
                 .email(request.email())
                 .telefone(request.telefone())
-                .nivelAluno(request.nivelAluno())
-                .dataInicio(request.dataInicio())
                 .build();
     }
 
@@ -32,8 +28,6 @@ public class AlunoMapper {
         aluno.setNome(request.nome());
         aluno.setEmail(request.email());
         aluno.setTelefone(request.telefone());
-        aluno.setNivelAluno(request.nivelAluno());
-        aluno.setDataInicio(request.dataInicio());
     }
 
     public static AlunoCreateResponse toCreateResponse(Aluno aluno) {
@@ -41,8 +35,6 @@ public class AlunoMapper {
                 aluno.getId(),
                 aluno.getNome(),
                 aluno.getEmail(),
-                aluno.getTelefone(),
-                aluno.getNivelAluno(),
-                aluno.getDataInicio());
+                aluno.getTelefone());
     }
 }

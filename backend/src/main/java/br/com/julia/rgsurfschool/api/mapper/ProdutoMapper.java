@@ -11,7 +11,6 @@ public class ProdutoMapper {
                 produto.getId(),
                 produto.getNome(),
                 produto.getQtdEstoque(),
-                produto.getCondicao(),
                 produto.getPreco(),
                 produto.getCusto(),
                 produto.getDataAquisicao(),
@@ -23,7 +22,6 @@ public class ProdutoMapper {
         return Produto.builder()
                 .nome(request.nome())
                 .qtdEstoque(request.qtdEstoque())
-                .condicao(request.condicao())
                 .preco(request.preco())
                 .custo(request.custo())
                 .dataAquisicao(request.dataAquisicao())
@@ -36,7 +34,6 @@ public class ProdutoMapper {
                 .id(id)
                 .nome(request.nome())
                 .qtdEstoque(request.qtdEstoque())
-                .condicao(request.condicao())
                 .preco(request.preco())
                 .custo(request.custo())
                 .dataAquisicao(request.dataAquisicao())

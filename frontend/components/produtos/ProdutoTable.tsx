@@ -39,10 +39,6 @@ export function ProdutoTable({
       label: "Estoque",
     },
     {
-      key: "condicao",
-      label: "Condição",
-    },
-    {
       key: "preco",
       label: "Preço",
       render: (produto) => formatCurrency(produto.preco),
@@ -50,16 +46,17 @@ export function ProdutoTable({
     {
       key: "custo",
       label: "Custo",
-      render: (produto) => formatCurrency(produto.custo),
+      render: (produto) => produto.custo ? formatCurrency(produto.custo) : "-",
     },
     {
       key: "dataAquisicao",
       label: "Data Aquisição",
-      render: (produto) => formatDate(produto.dataAquisicao),
+      render: (produto) => produto.dataAquisicao ? formatDate(produto.dataAquisicao) : "-",
     },
     {
       key: "fornecedor",
       label: "Fornecedor",
+      render: (produto) => produto.fornecedor || "-",
     },
   ];
 

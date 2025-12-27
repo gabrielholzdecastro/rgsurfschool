@@ -3,9 +3,8 @@
 import { useState, FormEvent, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
-import { NivelAluno, AlunoCreateRequest } from "@/types/aluno";
+import { AlunoCreateRequest } from "@/types/aluno";
 import { createAluno, updateAluno, getAluno } from "@/lib/api/alunos";
 
 interface AlunoFormProps {
@@ -24,8 +23,6 @@ export function AlunoForm({ alunoId, onSuccess, onClose }: AlunoFormProps) {
     nome: "",
     email: "",
     telefone: "",
-    nivelAluno: NivelAluno.INICIANTE,
-    dataInicio: new Date().toISOString().split("T")[0],
   });
 
   const loadAluno = useCallback(async () => {
@@ -38,9 +35,7 @@ export function AlunoForm({ alunoId, onSuccess, onClose }: AlunoFormProps) {
       setFormData({
         nome: aluno.nome,
         email: aluno.email || "",
-        telefone: aluno.telefone,
-        nivelAluno: aluno.nivelAluno,
-        dataInicio: aluno.dataInicio || new Date().toISOString().split("T")[0],
+        telefone: aluno.telefone || "",
       });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Erro ao carregar aluno";
@@ -60,8 +55,6 @@ export function AlunoForm({ alunoId, onSuccess, onClose }: AlunoFormProps) {
         nome: "",
         email: "",
         telefone: "",
-        nivelAluno: NivelAluno.INICIANTE,
-        dataInicio: new Date().toISOString().split("T")[0],
       });
       setIsLoading(false);
       setError(null);
@@ -128,37 +121,11 @@ export function AlunoForm({ alunoId, onSuccess, onClose }: AlunoFormProps) {
       />
 
       <Input
-        label="Telefone *"
+        label="Telefone"
         type="tel"
-        required
         value={formData.telefone}
         onChange={(e) =>
           setFormData({ ...formData, telefone: e.target.value })
-        }
-      />
-
-      <Select
-        label="Nível *"
-        required
-        value={formData.nivelAluno}
-        onChange={(e) =>
-          setFormData({
-            ...formData,
-            nivelAluno: e.target.value as NivelAluno,
-          })
-        }
-      >
-        <option value={NivelAluno.INICIANTE}>Iniciante</option>
-        <option value={NivelAluno.INTERMEDIARIO}>Intermediário</option>
-        <option value={NivelAluno.AVANCADO}>Avançado</option>
-      </Select>
-
-      <Input
-        label="Data de Início"
-        type="date"
-        value={formData.dataInicio}
-        onChange={(e) =>
-          setFormData({ ...formData, dataInicio: e.target.value })
         }
       />
 

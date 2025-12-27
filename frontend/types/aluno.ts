@@ -1,15 +1,7 @@
-export enum NivelAluno {
-  INICIANTE = "INICIANTE",
-  INTERMEDIARIO = "INTERMEDIARIO",
-  AVANCADO = "AVANCADO",
-}
-
 export interface AlunoCreateRequest {
   nome: string;
   email: string;
   telefone: string;
-  nivelAluno: NivelAluno;
-  dataInicio: string; // ISO date string
 }
 
 export interface AlunoFindAllResponse {
@@ -17,8 +9,6 @@ export interface AlunoFindAllResponse {
   nome: string;
   email: string;
   telefone: string;
-  nivelAluno: NivelAluno;
-  dataInicio: string; // ISO date string
 }
 
 export interface AlunoCreateResponse {
@@ -26,7 +16,5 @@ export interface AlunoCreateResponse {
   nome: string;
   email: string;
   telefone: string;
-  nivelAluno: NivelAluno;
-  dataInicio: string; // ISO date string
 }
 

@@ -1,6 +1,5 @@
 import { Card } from "@/components/ui/Card";
 import { AlunoFindAllResponse } from "@/types/aluno";
-import { formatDate } from "@/lib/utils";
 
 interface AlunoCardProps {
   aluno: AlunoFindAllResponse;
@@ -16,17 +15,8 @@ export function AlunoCard({ aluno }: AlunoCardProps) {
             <span className="font-medium">Email:</span> {aluno.email || "N/A"}
           </p>
           <p>
-            <span className="font-medium">Telefone:</span> {aluno.telefone}
+            <span className="font-medium">Telefone:</span> {aluno.telefone || "N/A"}
           </p>
-          <p>
-            <span className="font-medium">Nível:</span> {aluno.nivelAluno}
-          </p>
-          {aluno.dataInicio && (
-            <p>
-              <span className="font-medium">Data de Início:</span>{" "}
-              {formatDate(aluno.dataInicio)}
-            </p>
-          )}
         </div>
       </div>
     </Card>
